@@ -1,0 +1,42 @@
+[
+  {
+    "is_sequence": true,
+    "connection": "Synonyms for the main Desert Bus shifts, in reverse order",
+    "clues": [
+      "6th Star (of a constellation)",
+      "City Guard",
+      "Canadian Superhero Team",
+      "(eg) Morning Patrol"
+    ]
+  },
+  {
+    "is_sequence": true,
+    "connection": "The latest four Desert Bus locations, going backward chronloigcally",
+    "clues": [
+      "Moonbase mk. V (and empty adjacent unit)",
+      "Lunar Module Mk IV",
+      "Remote Bus / MB V",
+      "Moonbase mk. VI"
+    ]
+  },
+  {
+    "is_sequence": true,
+    "connection": "\"Major\" Stops on Greyhound bus from East Tucson to Las Vegas",
+    "clues": [
+      "Phoenix Sky Harbor, Arizona",
+      "Kingman, Arizona",
+      "Henderson, Nevada",
+      "Las Vegas, Nevada"
+    ]
+  },
+  {
+    "is_sequence": true,
+    "connection": "Highest live-auction amounts for craft-along items",
+    "clues": [
+      "The Summoner's Shrine (Schala-Kitty)",
+      "General Leia Cross Stitch (Sarah Overall)",
+      "Breath of the Wild Cross Stitch (Sarah Overall)",
+      "Link to the Past Coffee Table (Chris and Emily von Seele)"
+    ]
+  }
+]

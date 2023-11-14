@@ -1,0 +1,84 @@
+<!--
+SPDX-FileCopyrightText: 2023 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+
+SPDX-License-Identifier: BSD-2-Clause
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Only Connect</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat%3Ai%2Cbi%2C700%2C800%2C400%2C500%2C600&amp;display=swap" rel="stylesheet" nonce="">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div id="info">
+      <div>
+        <p><b>Instructions:</b></p>
+        <p>
+          The layout is set so all content the contestants / stream need is in the fixed red box (860x340px).
+          Game host controls will appear below this text.
+        </p>
+        <p>Current Round: "<span id="round-info"></span>"</p>
+        <ul>
+          <li class="on-question"><button onclick="nextClue()">Next Clue</button></li>
+          <li class="on-question"><button onclick="revealAnswer()">Lock-In Answer</button> (reveals all clues and answer)</li>
+          <li class="on-question"><button onclick="questionSelect()">Back to Question Select</button></li>
+          <li class="on-select">Select a hieroglyph below to start a question</li>
+          <li class="on-select"><button onclick="goToRound('connections.json', 'Round 1: Connections')">Jump to Round 1 (Connections)</button> (will reset all questions)</li>
+          <li class="on-select"><button onclick="goToRound('sequences.json', 'Round 2: Sequences')">Jump to Round 2 (Sequences)</button> (will reset all questions)</li>
+        </ul>
+      </div>
+      <section style="display: flex">
+        <div style="max-width: 240px">
+          <p><b>Hieroglyph Key:</b></p>
+          <dl>
+            <dt>𓇌</dt><dd>Two Reeds</dd>
+            <dt>𓃭</dt><dd>Lion</dd>
+            <dt>𓎛</dt><dd>Twisted Flax</dd>
+            <dt>𓆑</dt><dd>Hornèd Viper</dd>
+            <dt>𓈗</dt><dd>Water</dd>
+            <dt>𓂀</dt><dd>Eye of Horus</dd>
+          </dl>
+        </div>
+        <div>
+          <p><b>Rules:</b></p>
+          <p>
+            In round one, the players have one opportunity to guess what the connection between the clues.
+            They can confer freely ask for the next clue at any point before they guess, for fewer total points.
+            This UI does not implement any timers.
+          </p>
+          <p>
+            In round two, the players have to predict the fourth entry in the sequence (they do not need to explain the connection).
+            Otherwise, the rules are the same.
+          </p>
+          <p>
+            Round three, the connection wall, is under development.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div id="backfill"></div>
+    <section id="selection">
+      <span>𓇌</span>
+      <span>𓃭</span>
+      <span>𓎛</span>
+      <span>𓆑</span>
+      <span>𓈗</span>
+      <span>𓂀</span>
+    </section>
+
+    <section id="question">
+      <div>
+        <span class="active" data-points="5">A hammer and feather</span>
+        <span data-points="3">Six US Flags</span>
+        <span data-points="2">Eugene Shoemaker's Ashes</span>
+        <span data-points="1">Two Golf Balls</span>
+      </div>
+      <div class="connection">Some connection between the clues</div>
+    </section>
+  </body>
+</html>
