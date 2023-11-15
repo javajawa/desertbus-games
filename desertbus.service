@@ -1,0 +1,21 @@
+# vim: nospell
+[Unit]
+Description=DB Games Site
+After=network-online.target mount.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=www-data
+
+#StandardOutput=syslog
+#StandardError=syslog
+
+WorkingDirectory=/srv/db
+ExecStart=/srv/db/venv/bin/python3 -m only_connect
+
+# Restart 30 seconds after a failure
+Restart=on-failure
+RestartSec=30

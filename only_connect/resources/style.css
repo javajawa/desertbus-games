@@ -22,13 +22,18 @@ ul, li, p {
   font-weight: normal;
 }
 
+p {
+  margin: 10px 0;
+}
+
 button {
   font-size: 16pt;
 }
 
 dt {
   display: inline-block;
-  width: 2rem;
+  width: 3rem;
+  text-align: center;
 }
 dd {
   display: inline-block;
@@ -38,8 +43,8 @@ dd {
 }
 
 #info div {
-  padding: 0 20px;
-  border: 1px solid black;
+  padding: 0 10px;
+  border: 1px solid #ccc;
 }
 
 #selection, #question, #backfill {
@@ -49,7 +54,7 @@ dd {
   width: 860px;
   padding: 10px 0;
   height: 340px;
-  background: radial-gradient(ellipse at top, #aacfff, #5678aa);
+  background: radial-gradient(ellipse at top, #99bbff, #5678aa);
   font-size: 16pt;
   text-align: center;
   outline: 2px red solid;
@@ -63,10 +68,10 @@ dd {
   outline: none;
 }
 
-.on-question, .on-select {
+.on-question, .on-select, .on-revealed {
   display: none;
 }
-.state-selection #selection, .state-selection .on-select, .state-question #question, .state-question .on-question {
+.state-selection #selection, .state-selection .on-select, .state-question #question, .state-question:not(.state-revealed) .on-question, .state-revealed .on-revealed {
   display: block;
 }
 
@@ -79,7 +84,7 @@ dd {
   justify-content: center;
   vertical-align: middle;
 
-  background: linear-gradient(to bottom, #bbccff, #99aaff);
+  background: linear-gradient(to bottom, #bbccff, #7799ff);
   font-size: 36pt;
   margin: 5px;
   border-radius: 5px;
@@ -124,7 +129,7 @@ dd {
   justify-content: center;
   vertical-align: middle;
 
-  background: linear-gradient(to bottom, #bbccff, #99aaff);
+  background: #c0c0e0; /* linear-gradient(to bottom, #bbbbe0, #99aacc); */
   border-radius: 5px;
 
   transition: 0.4s;
@@ -169,9 +174,4 @@ dd {
   background: linear-gradient(to bottom, #204880, #24528f);
   color: white;
   content: attr(data-points) " Points";
-}
-
-#scratchpad {
-  color: rgb(255, 202, 57);
-  color: #24528f
 }
