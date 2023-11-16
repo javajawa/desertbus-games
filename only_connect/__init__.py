@@ -14,7 +14,7 @@ import string
 from aiohttp import web, WSMsgType, WSMessage
 
 from .state import Game, OverallState, Question
-from .config import TestGame
+from .config import AlphaFlightGame, NightWatchGame
 
 
 Message = str
@@ -39,6 +39,7 @@ class Servlet:
         self._app = web.Application()
         self._app.router.add_route("GET", "/", self._game_index)
         self._app.router.add_route("GET", "/create/{slug}/{teams}", self._create_room)
+        self._app.router.add_route("GET", "/audit/{slug}", self._audit_game)
         self._app.router.add_route("GET", "/{prefix}/ws", self._room_socket)
         self._app.router.add_route("GET", "/{prefix}/gm", self._room_gm_page)
         self._app.router.add_route("GET", "/{prefix}/pres", self._room_presentation_page)
@@ -46,7 +47,8 @@ class Servlet:
         self._app.router.add_static("/", "only_connect/resources/")
 
         self._available = {
-            "test": TestGame,
+            "af120": AlphaFlightGame,
+            "nw126": NightWatchGame,
         }
         self._games = {None: None}
 
@@ -55,7 +57,7 @@ class Servlet:
 
     async def _game_index(self, _: web.Request) -> web.Response:
         rooms = [
-            f'<li>{room.description()}: <a href="create/{path}/1">One Team</a> | <s>Two Teams</s> (Coming Soon(?))</li>'
+            f'<li>{room.description()}<ul><li><a href="/audit/{path}">Audit Content</a> (for stream safety)</li><li><a href="create/{path}/1">Play with One Team</a></li><li><s>Play with Two Teams</s> (Coming Soon(?))</li></ul></li>'
             for path, room in self._available.items()
         ]
 
@@ -77,7 +79,7 @@ class Servlet:
         teams = int(request.match_info["teams"])
 
         if game_slug not in self._available:
-            return web.Response(status=404)
+            return web.HTTPNotFound()
 
         prefix = None
         while prefix in self._games:
@@ -86,6 +88,40 @@ class Servlet:
         self._games[prefix] = GameServlet(self._available[game_slug](teams))
 
         return web.HTTPFound("/" + prefix + "/gm")
+
+    async def _audit_game(self, request: web.Request) -> web.Response:
+        game_slug = request.match_info["slug"]
+
+        if game_slug not in self._available:
+            return web.HTTPNotFound()
+
+        game = self._available[game_slug]
+        questions = game.possible()
+
+        question_text = [
+            (
+                f"<tr><td>{question.credit}</td>"
+                f"<td>{'sequence' if question.is_sequence else 'connections'}</td>"
+                f"<td>{question.connection}</td><td>"
+                f"<ul>" + "".join([f"<li>{clue}</li>" for clue in question.clues]) + "</ul></td>"
+                "</tr>"
+            )
+            for question in questions
+        ]
+
+        return web.Response(
+            content_type="text/html",
+            body=(
+                "<!DOCTYPE html><html><head>"
+                '<meta charset="utf-8">'
+                '<link rel="stylesheet" href="/style.css">'
+                "</head><body>"
+                "<h1>Only Connect</h1>"
+                "<p>Note: 6 connections and 6 sequences questions will be random selected from the below."
+                f'<table>{"".join(question_text)}</table>'
+                "</body></html>"
+            ),
+        )
 
     def _get_room(self, request: web.Request) -> GameServlet | None:
         return self._games.get(request.match_info["prefix"])

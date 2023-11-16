@@ -1,4 +1,5 @@
 import dataclasses
+import random
 
 
 @dataclasses.dataclass
@@ -10,18 +11,21 @@ class Question:
     connection: str
     # What the four clues are
     clues: tuple[str, ...]
+    credit: str
 
     id: str
 
-    def __init__(self, is_sequence: bool, connection: str, clues: tuple[str, ...]) -> None:
+    def __init__(self, is_sequence: bool, connection: str, clues: tuple[str, ...], credit: str) -> None:
         self.id = str(id(self))
         self.is_sequence = is_sequence
         self.connection = connection
         self.clues = clues
+        self.credit = credit
 
     @property
     def max_clues(self) -> int:
         return len(self.clues) - 1 - int(self.is_sequence)
+
 
 @dataclasses.dataclass
 class OverallState:
@@ -54,9 +58,28 @@ class Game:
     def description(cls) -> str:
         return str(cls)
 
+    @classmethod
+    def possible(cls) -> list[Question]:
+        return []
+
     state: OverallState
     rounds: list[tuple[Question, ...]]
 
     def __init__(self, total_teams: int) -> None:
         self.state = OverallState(total_teams)
+        possible = self.possible()
+
+        possible_connections = [x for x in possible if not x.is_sequence]
+        possible_sequences = [x for x in possible if x.is_sequence]
+
+        random.shuffle(possible_connections)
+        random.shuffle(possible_sequences)
+
+        if len(possible_connections) > 6:
+            possible_connections = possible_connections[0:6]
+        if len(possible_sequences) > 6:
+            possible_sequences = possible_sequences[0:6]
+
+        self.rounds = [tuple(possible_connections), tuple(possible_sequences)]
+
         self.state.available_questions = [True for _ in self.rounds[0]]

@@ -175,3 +175,15 @@ dd {
   color: white;
   content: attr(data-points) " Points";
 }
+
+table, tr, td {
+  border: 1px solid black;
+  font-weight: normal;
+  border-collapse: collapse;
+  padding: 5px;
+}
+td ul, td li {
+  padding: 0;
+  margin: 0 0 0 10px;
+  list-style: initial;
+}

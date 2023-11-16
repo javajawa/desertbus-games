@@ -18,12 +18,16 @@ SPDX-License-Identifier: BSD-2-Clause
       <div>
         <p><b>Instructions:</b></p>
         <p>
-          The layout is set so all content the contestants / stream need is in the fixed red box (860x340px).
-          Game host controls will appear below this text.
-          Alternatively, a larger <a href="pres" target="_blank">Public Presentation View</a>
-          is available for contestants and stream.
+          <strong>WARNING</strong>: This view is "behind the DM screen".
+          The player/chat should see either the 860x340px box in red at the bottom, or
+          the <a href="pres" target="_blank">Public Presentation View</a>
         </p>
-        <p>Current Round: "<span id="round-info"></span>"</p>
+        <ul>
+          <li>Current Round: "<span id="round-info"></span>"</li>
+          <li>Score: "<span id="score"></span>"</li>
+          <li class="on-question">Author: "<span id="credit"></span>"</li>
+          <li class="on-question">Answer (for "be more specific"): "<span id="_answer"></span>"</li>
+        </ul>
         <ul>
           <li class="on-question"><button id="nextClue">Next Clue</button></li>
           <li class="on-question"><button id="revealAnswer">Lock-In Answer</button> (reveals all clues and answer)</li>

@@ -8,6 +8,7 @@
 /**
  * @property {!string} id
  * @property {!string} connection
+ * @property {!string} credit
  * @property {!Array<string>} clues
  * @property {!boolean} is_sequence
  */
@@ -117,7 +118,8 @@ class Controller {
    */
   questionSelect(data)
   {
-    document.getElementById("round-info").textContent = "Round " + (data.current_round + 1).toString() + ", current score: " + data.scores;
+    document.getElementById("round-info").textContent = "Round " + (data.current_round + 1);
+    document.getElementById("score").textContent = data.scores;
     [...document.getElementById("selection").querySelectorAll("span")].forEach(
         (e, i) => {
           e.classList.toggle("available", data.available_questions[i] || false);
@@ -149,6 +151,8 @@ class Controller {
         clues[clues.length - 1].classList.add("revealed");
       }
 
+      document.getElementById("_answer").textContent = data.current_question.connection;
+      document.getElementById("credit").textContent = data.current_question.credit;
       questionBlock.querySelector(".connection").textContent = data.current_question.connection;
     }
 
