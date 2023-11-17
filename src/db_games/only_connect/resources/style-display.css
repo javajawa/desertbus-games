@@ -23,7 +23,6 @@ html, body {
   left: calc(50% - 400px);
   bottom: calc(50% - 400px);
 
-
   font-size: 16pt;
 }
 
@@ -72,7 +71,22 @@ html, body {
   bottom: 5px ;
   width: 100%;
   text-align: center;
+  opacity: 1;
+  transition: opacity 0.5s;
 }
+
 #credit::before {
-  content: "Question by ";
+  content: "Question by: ";
+}
+
+#question:not(.answered) #credit {
+  opacity: 0;
+}
+
+#score {
+  margin-top: 10px;
+}
+
+#score::before {
+  content: "Current Score: ";
 }

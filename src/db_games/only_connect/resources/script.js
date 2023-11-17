@@ -58,7 +58,7 @@ class Controller {
 
   connect() {
     // Socket location is /game-name/ws, e.g. /ABCD/ws
-    const socket_location = new URL("ws", window.location);
+    const socket_location = new URL("/ws/" + window.location.pathname.split("/")[1], window.location);
 
     // Socket protocol must match the security of the page
     socket_location.protocol =

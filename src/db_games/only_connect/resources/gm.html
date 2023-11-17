@@ -10,19 +10,24 @@ SPDX-License-Identifier: BSD-2-Clause
     <meta charset="utf-8" />
     <title>Only Connect</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat%3Ai%2Cbi%2C700%2C800%2C400%2C500%2C600&amp;display=swap" rel="stylesheet" nonce="">
-    <link rel="stylesheet" href="/style.css" />
-    <link rel="stylesheet" href="/style-display.css" />
-    <script src="/script.js" async defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" async defer></script>
   </head>
   <body>
     <div id="info">
       <div>
         <p><b>Instructions:</b></p>
         <p>
-          The layout is set so all content the contestants / stream need is in the fixed red box (860x340px).
-          Game host controls will appear below this text.
+          <strong>WARNING</strong>: This view is "behind the DM screen".
+          The player/chat should see either the 860x340px box in red at the bottom, or
+          the <a href="display.html" target="_blank">Public Presentation View</a>
         </p>
-        <p>Current Round: "<span id="round-info"></span>"</p>
+        <ul>
+          <li>Current Round: "<span id="round-info"></span>"</li>
+          <li>Score: "<span id="score"></span>"</li>
+          <li class="on-question">Author: "<span id="credit"></span>"</li>
+          <li class="on-question">Answer (for "be more specific"): "<span id="_answer"></span>"</li>
+        </ul>
         <ul>
           <li class="on-question"><button id="nextClue">Next Clue</button></li>
           <li class="on-question"><button id="revealAnswer">Lock-In Answer</button> (reveals all clues and answer)</li>
@@ -82,8 +87,7 @@ SPDX-License-Identifier: BSD-2-Clause
         <span data-points="2">Eugene Shoemaker's Ashes</span>
         <span data-points="1">Two Golf Balls</span>
       </div>
-      <div class="connection" id="_answer">Some connection between the clues</div>
-      <div id="credit">Author Name Here</div>
+      <div class="connection">Some connection between the clues</div>
     </section>
   </body>
 </html>

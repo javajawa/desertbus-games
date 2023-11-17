@@ -1,2 +1,6 @@
 /venv/
 /cert.pem
+/.mypy_cache/
+/.ruff_cache/
+/reports/
+__pycache__/
