@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import AsyncIterator
 
 import asyncio
@@ -9,11 +11,11 @@ from pathlib import Path
 
 from aiohttp import web
 
-from db_games.abc import Game
+from db_games.abc import Game, GameEngine, GameInfo, _IdMixin
 
 
 @dataclasses.dataclass
-class Question:
+class Question(_IdMixin):
     # Whether this is a connections round (false), or a complete the sequence round (true)
     is_sequence: bool
 
@@ -40,7 +42,7 @@ class Question:
 
 
 @dataclasses.dataclass
-class OverallState:
+class OverallState:  # pylint: disable=too-many-instance-attributes
     # Whether the game is running with a single team (false) or two competing teams (true)
     total_teams: int
 
@@ -66,56 +68,20 @@ class OverallState:
 
 
 class OnlyConnectGame(Game, ABC):
-    state: OverallState
-    rounds: list[tuple[Question, ...]]
+    @staticmethod
+    def discover_games() -> dict[str, type[Game]]:
+        return {
+            "af120": AlphaFlightGame,
+            "nw126": NightWatchGame,
+        }
 
     @classmethod
     @abstractmethod
     def possible(cls) -> list[Question]:
         pass
 
-    @classmethod
-    async def audit(cls) -> web.Response:
-        connection_text = [
-            (
-                f"<tr><td>{question.credit}</td>"
-                f"<td>{question.connection}</td><td>"
-                f"<ul>"
-                + "".join([f"<li>{clue}</li>" for clue in question.clues])
-                + "</ul></td>"
-                "</tr>"
-            )
-            for question in cls.possible() if not question.is_sequence
-        ]
-        sequence_text = [
-            (
-                f"<tr><td>{question.credit}</td>"
-                f"<td>{question.connection}</td><td>"
-                f"<ul>"
-                + "".join([f"<li>{clue}</li>" for clue in question.clues])
-                + "</ul></td>"
-                "</tr>"
-            )
-            for question in cls.possible() if question.is_sequence
-        ]
-
-        return web.Response(
-            content_type="text/html",
-            body=(
-                "<!DOCTYPE html><html><head>"
-                '<meta charset="utf-8">'
-                '<link rel="stylesheet" href="/style.css">'
-                "</head><body>"
-                "<h1>Only Connect</h1>"
-                "<h2>Round 1 Connections</h2>"
-                f"<p>6 of {len([x for x in cls.possible() if not x.is_sequence])} connections from:</p>"
-                f'<table>{"".join(connection_text)}</table>'
-                "<h2>Round 2 Sequences</h2>"
-                f"<p>6 of {len([x for x in cls.possible() if x.is_sequence])} sequences from:</p>"
-                f'<table>{"".join(sequence_text)}</table>'
-                "</body></html>"
-            ),
-        )
+    state: OverallState
+    rounds: list[tuple[Question, ...]]
 
     def __init__(self, total_teams: int) -> None:
         super().__init__()
@@ -227,11 +193,12 @@ class OnlyConnectGame(Game, ABC):
 
 
 GENERAL_QUESTIONS = [
-    # Question(
-    #     False,
-    #     "Adjectives that prefix Kitteh's Twitch accounts",
-    #     ("thirsty_", "Cuddly_", "disaster_", "two_distinct_")
-    # )
+    Question(
+        False,
+        "Adjectives that prefix Kitteh's Twitch accounts",
+        ("thirsty_", "Cuddly_", "disaster_", "two_distinct_"),
+        "Kitteh",
+    )
 ]
 
 NIGHTWATCH_QUESTIONS = [
@@ -255,38 +222,48 @@ NIGHTWATCH_QUESTIONS = [
     Question(
         False,
         "'This' categories from Night Watch 'This or Thats'",
-        ("Planets in Doctor Who", "Real Flag", "Business Acryonyms", "Gundam Characters"),
+        (
+            "Planets in Doctor Who",
+            "Real Flag",
+            "Business Acryonyms",
+            "Gundam Characters",
+        ),
         "Kitteh",
     ),
     Question(
         False,
         "'New' genres reported by Archibald Metropolis (Broken News Day 5)",
         ("Hyperloop", "Inert Gas", "Sponge-like Metal", "Country"),
+        "Kitteh + Archibald Metropolis",
+    ),
+    Question(
+        False,
+        "Emoji representation of Desert Bus game events",
+        ("🫵", "💥", "🔴", "🪲"),
         "Kitteh",
     ),
     Question(
         False,
-        "Titles of the full Random Dance Party tracks",
-        (
-            "A Thousand Miles",
-            "In The End",
-            "Livin' On A Prayer",
-            "We Like to Party! (The Vengabus) [2020 DJ Coriander Remix]",
-        ),
-        "drFox17 + Kitteh",
+        "Desert Bus traditions that started at DB2018",
+        ("Coffee Pong", "DBloons", "??:05 Currency Conversion", "5k Wingdings"),
+        "avi_miller",
     ),
-    Question(
-        False,
-        "Forts on Vancouver Island",
-        ("Rupert", "San Miguel", "Rodd Hill", "Victoria"),
-        "Kitteh",
-    ),
-
+    # Question(
+    #     True,
+    #     "Inspiration for the names of the DBZ Ginyu Force members, from shortest to tallest",
+    #     ("yoghurt (~100cm)", "cheese (~170cm)", "cream (~230cm)", "butter (~250cm)"),
+    #     "Laogeodritt",
+    # ),
     Question(
         True,
-        "Inspiration for the names of the DBZ Ginyu Force members, from shortest to tallest",
-        ("yoghurt (~100cm)", "cheese (~170cm)", "cream (~230cm)", "butter (~250cm)"),
-        "Laogeodritt",
+        "Highest Numbers of Crashes on Desert Bus (accept the year if they got the sequence)",
+        (
+            "2016 - 29 times",
+            "2022 - 32 times",
+            "2021 - 39 times",
+            "2020 - 45 times",
+        ),
+        "avi_miller + Kitteh",
     ),
     Question(
         True,
@@ -339,11 +316,12 @@ NIGHTWATCH_QUESTIONS = [
             "The Summoner's Shrine (Schala-Kitty)",
             "General Leia Cross Stitch (Sarah Overall)",
             "Breath of the Wild Cross Stitch (Sarah Overall)",
-            "Link to the Past Coffee Table (Chris and Emily von Seele)"
+            "Link to the Past Coffee Table (Chris and Emily von Seele)",
         ),
-        "Kitteh"
-    )
+        "Kitteh",
+    ),
 ]
+
 
 ALPHAFLIGHT_QUESTIONS = [
     Question(
@@ -392,7 +370,6 @@ ALPHAFLIGHT_QUESTIONS = [
         ),
         "Kitteh",
     ),
-
     Question(
         True,
         "Synonyms for the main Desert Bus shifts, in reverse order",
@@ -431,8 +408,12 @@ ALPHAFLIGHT_QUESTIONS = [
     Question(
         True,
         "Shape at the bottom of the DB shift banners",
-        ("Horizontal Line", "Line slanted upwards to the right",
-         "Line going up, then back down", "Line going down, then back up"),
+        (
+            "Horizontal Line",
+            "Line slanted upwards to the right",
+            "Line going up, then back down",
+            "Line going down, then back up",
+        ),
         "Kitteh",
     ),
 ]
@@ -440,33 +421,100 @@ ALPHAFLIGHT_QUESTIONS = [
 
 class AlphaFlightGame(OnlyConnectGame):
     @classmethod
+    def possible(cls) -> list[Question]:
+        return ALPHAFLIGHT_QUESTIONS
+
+    @classmethod
     def description(cls) -> str:
         return (
             "OnlyConnect for AlphaFlight (General Knowledge with DesertBus sub-theme)"
         )
 
-    @classmethod
-    def possible(cls) -> list[Question]:
-        return ALPHAFLIGHT_QUESTIONS + GENERAL_QUESTIONS
-
 
 class NightWatchGame(OnlyConnectGame):
+    @classmethod
+    def possible(cls) -> list[Question]:
+        return NIGHTWATCH_QUESTIONS
+
     @classmethod
     def description(cls) -> str:
         return "OnlyConnect for Night Watch (General Knowledge with DesertBus + Night Watch themes)"
 
-    @classmethod
-    def possible(cls) -> list[Question]:
-        return NIGHTWATCH_QUESTIONS + GENERAL_QUESTIONS
 
+class OnlyConnect(GameEngine):
+    games: dict[str, type[OnlyConnectGame]] = {
+        "af120": AlphaFlightGame,
+        "mw126": NightWatchGame,
+    }
 
-class TestGame(OnlyConnectGame):
-    @classmethod
-    def description(cls) -> str:
-        return "TEST GAME DO NOT USE (If you see this Kitteh forgot to remove it from production)"
+    @property
+    def name(self) -> str:
+        return "Only Connect"
 
-    @classmethod
-    def possible(cls) -> list[Question]:
-        return [
+    @property
+    def description(self) -> str:
+        return "fdsfskjlflkdsj"
 
-        ]
+    async def available(self) -> dict[str, GameInfo]:
+        return {
+            key: GameInfo(
+                value.__name__, "Kitteh and Friends", value.description(), [1]
+            )
+            for key, value in self.games.items()
+        }
+
+    async def create(self, ident: str) -> Game:
+        return self.games[ident](1)
+
+    async def audit(self, ident: str) -> web.Response:
+        possible = self.games[ident].possible()
+
+        connections = [question for question in possible if not question.is_sequence]
+        sequences = [question for question in possible if question.is_sequence]
+
+        connection_text = map(self._audit_line, connections)
+        sequences_text = map(self._audit_line, sequences)
+
+        return web.Response(
+            content_type="text/html",
+            body=(
+                "<!DOCTYPE html><html><head>"
+                '<meta charset="utf-8">'
+                '<link rel="stylesheet" href="/defs.css">'
+                '<link rel="stylesheet" href="/style.css">'
+                "</head><body>"
+                "<header>"
+                "<h1>Only Connect</h1>"
+                "</header>"
+                "<section>"
+                "<header>"
+                "<h2>Round 1 Connections</h2>"
+                "</header>"
+                "<main>"
+                f"<p>6 of {len(connections)} connections from:</p>"
+                f'<table>{"".join(connection_text)}</table>'
+                "</main>"
+                "</section>"
+                "<section>"
+                "<header>"
+                "<h2>Round 2 Sequences</h2>"
+                "</header>"
+                "<main>"
+                f"<p>6 of {len(sequences)} sequences from:</p>"
+                f'<table>{"".join(sequences_text)}</table>'
+                "</main>"
+                "</section>"
+                "</body></html>"
+            ),
+        )
+
+    @staticmethod
+    def _audit_line(question: Question) -> str:
+        return (
+            f"<tr><td>{question.credit}</td>"
+            f"<td>{question.connection}</td><td>"
+            f"<ul>"
+            + "".join([f"<li>{clue}</li>" for clue in question.clues])
+            + "</ul></td>"
+            "</tr>"
+        )

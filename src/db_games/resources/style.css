@@ -1,3 +1,58 @@
+/*
+ * SPDX-FileCopyrightText: 2023 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+
+  font-family: 'Montserrat', 'Arial', sans-serif;
+  font-size: 12pt;
+  font-variant: proportional-nums;
+
+  background: var(--db-blue);
+  color: var(--db-text);
+}
+
+.stream {
+  font-size: 16pt;
+  font-weight: bold;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul {
+  margin: 0.5em 0 0.5em 0;
+  display: block;
+}
+
+h1 {
+  font-size: 150%;
+}
+h2 {
+  font-size: 130%;
+}
+h3 {
+  font-size: 120%;
+}
+h4, h5, h6 {
+  font-size: 110%;
+}
+
+section {
+  margin: 1em 0 0 0;
+}
+header, main, footer, article {
+  padding: 0.1em 0.75em;
+}
+header {
+  background: var(--db-orange);
+}
+
 table, tr, td {
   border: 1px solid black;
   font-weight: normal;
@@ -5,8 +60,28 @@ table, tr, td {
   padding: 5px;
 }
 
-td ul, td li {
+a, a:visited {
+  color: #f0f0ff;
+}
+
+.gl-game-list {
+}
+.gl-game-list main {
+  display: grid;
+
   padding: 0;
-  margin: 0 0 0 10px;
-  list-style: initial;
+  margin: 10px 0;
+
+  /*grid-auto-flow: column;*/
+  grid-column: auto / auto;
+  /*grid-auto-columns: fit-content(400px);*/
+  /*grid-auto-rows: fit-content(400px);*/
+  gap: 10px;
+}
+.gl-game-panel {
+  display: inline-block;
+  min-width: 300px;
+  padding: 0 10px;
+  color: var(--db-text);
+  background: var(--db-light-blue);
 }

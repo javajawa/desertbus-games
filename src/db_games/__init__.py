@@ -17,8 +17,8 @@ from pathlib import Path
 
 from aiohttp import WSMessage, WSMsgType, web
 
-from .abc import Game
-from .only_connect import AlphaFlightGame, NightWatchGame, TestGame
+from .abc import Game, GameEngine
+from .only_connect import OnlyConnect
 
 Message = str
 MaybeMessage = Message | None | Awaitable[Message | None]
@@ -35,14 +35,14 @@ class StateEncoder(json.JSONEncoder):
 
 class Servlet:
     _app: web.Application
-    _available: dict[str, type[Game]]
+    _engines: dict[str, GameEngine]
     _games: dict[str, GameServlet | None]
 
     def __init__(self) -> None:
         self._app = web.Application()
         self._app.router.add_route("GET", "/", self.game_index)
-        self._app.router.add_route("GET", "/create/{slug}/{teams}", self.create_room)
-        self._app.router.add_route("GET", "/audit/{slug}", self.audit_game)
+        self._app.router.add_route("GET", "/create/{engine}/{game}", self.create_room)
+        self._app.router.add_route("GET", "/audit/{engine}/{game}", self.audit_game)
 
         self._app.router.add_route("GET", "/{prefix}/ws", self._room_socket)
         self._app.router.add_route("GET", "/ws/{prefix}", self._room_socket)
@@ -50,10 +50,8 @@ class Servlet:
 
         self._app.router.add_static("/", Path(__file__).parent / "resources")
 
-        self._available = {
-            "af120": AlphaFlightGame,
-            "nw126": NightWatchGame,
-            # "test": TestGame,
+        self._engines = {
+            "onlyconnect": OnlyConnect(),
         }
         self._games = {"": None}
 
@@ -61,15 +59,19 @@ class Servlet:
         web.run_app(self._app, port=8081, access_log=None, ssl_context=ssl_ctx)
 
     async def game_index(self, _: web.Request) -> web.Response:
-        rooms = [
+        available = [
             (
-                f"<li>{room.description()}<ul>"
-                f'<li><a href="/audit/{path}">Audit Content</a> (for stream safety)</li>'
-                f'<li><a href="create/{path}/1">Play with One Team</a></li>'
-                f"<li><s>Play with Two Teams</s> (Coming Soon(?))</li>"
-                f"</ul></li>"
+                '<section class="gl-game-list">'
+                "<header>"
+                f"<h2>{engine.name}</h2>"
+                f"<p>{engine.description}</p>"
+                "</header>"
+                "<main>"
+                f"{''.join(info.html(slug, game) for game, info in (await engine.available()).items())}"
+                "</main>"
+                "</section>"
             )
-            for path, room in self._available.items()
+            for slug, engine in self._engines.items()
         ]
 
         return web.Response(
@@ -78,37 +80,40 @@ class Servlet:
                 "<!DOCTYPE html><html><head>"
                 '<meta charset="utf-8">'
                 '<link rel="stylesheet" href="/style.css">'
+                '<link rel="stylesheet" href="/defs.css">'
                 "</head><body>"
-                "<h1>DB Games</h1>"
-                f'<ul>{"".join(rooms)}</ul>'
+                "<header><h1>DB Games</h1></header>"
+                f'{"".join(available)}'
                 "</body></html>"
             ),
         )
 
     async def create_room(self, request: web.Request) -> web.Response:
-        game_slug = request.match_info["slug"]
-        teams = int(request.match_info["teams"])
+        game_engine = request.match_info["engine"]
+        game_slug = request.match_info["game"]
 
-        if game_slug not in self._available:
+        if game_engine not in self._engines:
             return web.HTTPNotFound()
+
+        game = await self._engines[game_engine].create(game_slug)
 
         prefix = ""
         while prefix in self._games:
             prefix = "".join(random.choices(string.ascii_uppercase, k=4))  # nosec
 
-        game = self._available[game_slug](total_teams=teams)
         self._games[prefix] = GameServlet(game)
 
         return web.HTTPFound("/" + prefix + "/" + game.redirect())
 
     async def audit_game(self, request: web.Request) -> web.Response:
-        game_slug = request.match_info["slug"]
+        game_engine = request.match_info["engine"]
+        game_slug = request.match_info["game"]
 
-        if game_slug not in self._available:
+        if game_engine not in self._engines:
             return web.HTTPNotFound()
 
-        game = self._available[game_slug]
-        return await game.audit()
+        engine = self._engines[game_engine]
+        return await engine.audit(game_slug)
 
     def _get_room(self, request: web.Request) -> GameServlet | None:
         return self._games.get(request.match_info["prefix"])
