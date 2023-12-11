@@ -13,11 +13,12 @@ html, body {
   padding: 0;
 
   font-family: 'Montserrat', 'Arial', sans-serif;
-  font-size: 12pt;
+  font-size: 14pt;
   font-variant: proportional-nums;
 
-  background: var(--db-blue);
+  background: url("/background.png"), var(--db-blue);
   color: var(--db-text);
+  overflow-x: clip;
 }
 
 .stream {
@@ -49,12 +50,40 @@ section {
 header, main, footer, article {
   padding: 0.1em 0.75em;
 }
-header {
+header, header::after {
   background: var(--db-orange);
 }
 
+header.right-slant, header.left-slant {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  max-width: 800px;
+  margin-top: 10px;
+}
+header.right-slant {
+  float: right;
+}
+
+.left-slant::after, .right-slant::after {
+  content: ' ';
+
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+}
+.right-slant::after {
+  transform: skew(20deg);
+}
+.left-slant::after {
+  transform: skew(-20deg);
+}
+
 table, tr, td {
-  border: 1px solid black;
+  border: 1px solid white;
   font-weight: normal;
   border-collapse: collapse;
   padding: 5px;
@@ -67,21 +96,27 @@ a, a:visited {
 .gl-game-list {
 }
 .gl-game-list main {
-  display: grid;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 
   padding: 0;
-  margin: 10px 0;
-
-  /*grid-auto-flow: column;*/
-  grid-column: auto / auto;
-  /*grid-auto-columns: fit-content(400px);*/
-  /*grid-auto-rows: fit-content(400px);*/
-  gap: 10px;
+  margin: 15px 25px;
 }
 .gl-game-panel {
-  display: inline-block;
-  min-width: 300px;
   padding: 0 10px;
+  width: 100%;
   color: var(--db-text);
-  background: var(--db-light-blue);
+  background: var(--db-blue-accent);
+  border: 2px solid var(--db-light-blue);
+}
+@media screen and (min-width: 1024px) {
+  .gl-game-panel { width: calc(50% - 5px); }
+}
+@media screen and (min-width: 1440px) {
+  .gl-game-panel { width: calc(33% - 2px); }
+}
+
+.game-credit {
+  font-style: italic;
 }

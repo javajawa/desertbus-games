@@ -9,9 +9,8 @@ import string
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from aiohttp import web
-
 from db_games.abc import Game, GameEngine, GameInfo, _IdMixin
+from db_games.dom import Element, Node, NodeList
 
 
 @dataclasses.dataclass
@@ -30,7 +29,7 @@ class Question(_IdMixin):
     def __init__(
         self, is_sequence: bool, connection: str, clues: tuple[str, ...], credit: str
     ) -> None:
-        self.id = str(id(self))
+        super().__init__(str(id(self)))
         self.is_sequence = is_sequence
         self.connection = connection
         self.clues = clues
@@ -68,16 +67,14 @@ class OverallState:  # pylint: disable=too-many-instance-attributes
 
 
 class OnlyConnectGame(Game, ABC):
-    @staticmethod
-    def discover_games() -> dict[str, type[Game]]:
-        return {
-            "af120": AlphaFlightGame,
-            "nw126": NightWatchGame,
-        }
-
     @classmethod
     @abstractmethod
     def possible(cls) -> list[Question]:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def description(cls) -> str:
         pass
 
     state: OverallState
@@ -453,7 +450,7 @@ class OnlyConnect(GameEngine):
 
     @property
     def description(self) -> str:
-        return "fdsfskjlflkdsj"
+        return "Based on the fiendish but popular British game show"
 
     async def available(self) -> dict[str, GameInfo]:
         return {
@@ -466,55 +463,40 @@ class OnlyConnect(GameEngine):
     async def create(self, ident: str) -> Game:
         return self.games[ident](1)
 
-    async def audit(self, ident: str) -> web.Response:
+    async def audit(self, engine_slug: str, ident: str) -> Node:
         possible = self.games[ident].possible()
 
         connections = [question for question in possible if not question.is_sequence]
         sequences = [question for question in possible if question.is_sequence]
 
-        connection_text = map(self._audit_line, connections)
-        sequences_text = map(self._audit_line, sequences)
-
-        return web.Response(
-            content_type="text/html",
-            body=(
-                "<!DOCTYPE html><html><head>"
-                '<meta charset="utf-8">'
-                '<link rel="stylesheet" href="/defs.css">'
-                '<link rel="stylesheet" href="/style.css">'
-                "</head><body>"
-                "<header>"
-                "<h1>Only Connect</h1>"
-                "</header>"
-                "<section>"
-                "<header>"
-                "<h2>Round 1 Connections</h2>"
-                "</header>"
-                "<main>"
-                f"<p>6 of {len(connections)} connections from:</p>"
-                f'<table>{"".join(connection_text)}</table>'
-                "</main>"
-                "</section>"
-                "<section>"
-                "<header>"
-                "<h2>Round 2 Sequences</h2>"
-                "</header>"
-                "<main>"
-                f"<p>6 of {len(sequences)} sequences from:</p>"
-                f'<table>{"".join(sequences_text)}</table>'
-                "</main>"
-                "</section>"
-                "</body></html>"
+        return NodeList(
+            Element(
+                "section",
+                Element("header", Element("h2", "Round 1: Connections")),
+                Element(
+                    "main",
+                    Element("p", f"6 of {len(connections)} connections from:"),
+                    Element("table", *map(self._audit_line, connections)),
+                ),
+            ),
+            Element(
+                "section",
+                Element("header", Element("h2", "Round 2: Sequences")),
+                Element(
+                    "main",
+                    Element("p", f"6 of {len(sequences)} sequences from:"),
+                    Element("table", *map(self._audit_line, sequences)),
+                ),
             ),
         )
 
     @staticmethod
-    def _audit_line(question: Question) -> str:
-        return (
-            f"<tr><td>{question.credit}</td>"
-            f"<td>{question.connection}</td><td>"
-            f"<ul>"
-            + "".join([f"<li>{clue}</li>" for clue in question.clues])
-            + "</ul></td>"
-            "</tr>"
+    def _audit_line(question: Question) -> Element:
+        return Element(
+            "tr",
+            Element("td", question.credit),
+            Element("td", question.connection),
+            Element(
+                "td", Element("ul", *[Element("li", clue) for clue in question.clues])
+            ),
         )

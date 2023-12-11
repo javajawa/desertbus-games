@@ -47,7 +47,7 @@ disable=["missing-module-docstring", "missing-function-docstring", "missing-clas
 
 [tool.pydocstyle]
 inherit=false
-add-ignore=["D100", "D101", "D102", "D104", "D107", "D200", "D202", "D401"]
+add-ignore=["D100", "D101", "D102", "D104", "D105", "D107", "D200", "D202", "D401"]
 ignore-self-only-init=true
 
 [tool.bandit]

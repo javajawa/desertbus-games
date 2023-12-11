@@ -11,6 +11,7 @@ import json
 import logging
 import pathlib
 import random
+import sqlite3
 import ssl
 import string
 from pathlib import Path
@@ -18,7 +19,9 @@ from pathlib import Path
 from aiohttp import WSMessage, WSMsgType, web
 
 from .abc import Game, GameEngine
+from .dom import Document, Element
 from .only_connect import OnlyConnect
+from .this_or_that import ThisOrThat
 
 Message = str
 MaybeMessage = Message | None | Awaitable[Message | None]
@@ -50,42 +53,46 @@ class Servlet:
 
         self._app.router.add_static("/", Path(__file__).parent / "resources")
 
-        self._engines = {
-            "onlyconnect": OnlyConnect(),
-        }
         self._games = {"": None}
 
     def run(self, ssl_ctx: ssl.SSLContext | None) -> None:
-        web.run_app(self._app, port=8081, access_log=None, ssl_context=ssl_ctx)
+        with sqlite3.connect("games.db") as connection:
+            self._engines = {
+                "onlyconnect": OnlyConnect(),
+                "thisorthat": ThisOrThat(connection),
+            }
+            web.run_app(self._app, port=8081, access_log=None, ssl_context=ssl_ctx)
 
     async def game_index(self, _: web.Request) -> web.Response:
         available = [
-            (
-                '<section class="gl-game-list">'
-                "<header>"
-                f"<h2>{engine.name}</h2>"
-                f"<p>{engine.description}</p>"
-                "</header>"
-                "<main>"
-                f"{''.join(info.html(slug, game) for game, info in (await engine.available()).items())}"
-                "</main>"
-                "</section>"
+            Element(
+                "section",
+                Element(
+                    "header",
+                    Element("h2", engine.name),
+                    Element("p", engine.description),
+                    class_="left-slant",
+                ),
+                Element(
+                    "main",
+                    *[
+                        info.game_list_panel(slug, game)
+                        for game, info in (await engine.available()).items()
+                    ],
+                ),
+                class_="gl-game-list",
             )
             for slug, engine in self._engines.items()
         ]
 
         return web.Response(
             content_type="text/html",
-            body=(
-                "<!DOCTYPE html><html><head>"
-                '<meta charset="utf-8">'
-                '<link rel="stylesheet" href="/style.css">'
-                '<link rel="stylesheet" href="/defs.css">'
-                "</head><body>"
-                "<header><h1>DB Games</h1></header>"
-                f'{"".join(available)}'
-                "</body></html>"
-            ),
+            body=Document(
+                "CatBox Games",
+                Element("header", Element("h1", "CatBox Games"), class_="left-slant"),
+                *available,
+                styles=["/defs.css", "/style.css"],
+            ).html,
         )
 
     async def create_room(self, request: web.Request) -> web.Response:
@@ -106,14 +113,38 @@ class Servlet:
         return web.HTTPFound("/" + prefix + "/" + game.redirect())
 
     async def audit_game(self, request: web.Request) -> web.Response:
-        game_engine = request.match_info["engine"]
+        engine_slug = request.match_info["engine"]
         game_slug = request.match_info["game"]
 
-        if game_engine not in self._engines:
+        if engine_slug not in self._engines:
             return web.HTTPNotFound()
 
-        engine = self._engines[game_engine]
-        return await engine.audit(game_slug)
+        engine = self._engines[engine_slug]
+        info = await engine.available()
+
+        if game_slug not in info:
+            return web.HTTPNotFound()
+
+        game_info = info[game_slug]
+
+        return web.Response(
+            content_type="text/html",
+            body=Document(
+                "CatBox Games",
+                Element(
+                    "header",
+                    Element("h1", engine.name, " - ", game_info.title),
+                    class_="left-slant",
+                ),
+                Element(
+                    "main",
+                    Element("p", game_info.credit, class_="game-credit"),
+                    Element("p", game_info.description),
+                ),
+                await engine.audit(engine_slug, game_slug),
+                styles=["/defs.css", "/style.css"],
+            ).html,
+        )
 
     def _get_room(self, request: web.Request) -> GameServlet | None:
         return self._games.get(request.match_info["prefix"])
@@ -123,9 +154,13 @@ class Servlet:
         return await game.socket(request) if game else web.HTTPNotFound()
 
     async def _room_page(self, request: web.Request) -> web.StreamResponse:
-        game = self._get_room(request)
+        slug = request.match_info["prefix"]
+        file = request.match_info["file"]
 
-        if not game:
+        if engine := self._engines.get(slug):
+            return web.FileResponse(engine.path(file))
+
+        if not (game := self._get_room(request)):
             return web.HTTPNotFound()
 
         file = game.path(request.match_info["file"]).absolute()

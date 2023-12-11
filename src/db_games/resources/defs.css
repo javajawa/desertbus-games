@@ -1,7 +1,8 @@
 :root {
     --db-text: #ffffff;
-    --db-blue: #24528f;
-    --db-orange: #e6892c;
-    --db-light-blue: #4abbff;
+    --db-blue: #233ea2; /*#24528f;*/
+    --db-blue-accent: #24528f;
+    --db-orange: #e6892c; /*#d38f3d;*/
+    --db-light-blue: #4bbdfb; /*#4abbff;*/
     --rdp-green: #126d2e;
 }
