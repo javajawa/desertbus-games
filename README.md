@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+
+SPDX-License-Identifier: BSD-2-Clause
+-->
+
 I want to send in nice looking quiz challenges to Desert Bus.
 
 Time to make my own toolchain.

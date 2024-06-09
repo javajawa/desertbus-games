@@ -1,6 +1,20 @@
-/venv/
-/cert.pem
-/.mypy_cache/
-/.ruff_cache/
-/reports/
+# SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+venv/
 __pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+reports/
+.coverage
+
+/cert.pem
+/games.db
+/desertbus.service
+/db_games/
+/logs/
+/blobs/
+/.env

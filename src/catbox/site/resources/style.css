@@ -1,0 +1,290 @@
+/*
+ * SPDX-FileCopyrightText: 2023 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+
+  font-family: 'Montserrat', 'Arial', sans-serif;
+  font-size: 14pt;
+  font-variant: proportional-nums;
+}
+
+body {
+  background: url("/background.png"), var(--db-blue);
+  color: var(--db-text);
+  overflow-x: clip;
+}
+
+body.connecting>*, body.closed>* {
+  filter: blur(4px);
+}
+
+body.connecting::after, body.closed::after {
+  position: absolute;
+  top: 2rem;
+  left: 1rem;
+  display: block;
+  padding: 1rem;
+  border: 1px solid var(--db-light-blue);
+  background: var(--db-blue);
+}
+body.connecting::after {
+  content: "Connecting To Server...";
+}
+body.closed::after {
+  content: "Room has closed";
+}
+
+.stream {
+  font-size: 16pt;
+  font-weight: bold;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul {
+  margin: 0.5em 0 0.5em 0;
+  display: block;
+}
+
+h1 {
+  font-size: 150%;
+}
+h2 {
+  font-size: 130%;
+}
+h3 {
+  font-size: 120%;
+}
+h4, h5, h6 {
+  font-size: 110%;
+}
+
+section {
+  margin: 1em 0 0 0;
+}
+header, main, footer, article, fieldset {
+  padding: 0.1em 0.75em;
+}
+header, header::after, header::before {
+  background: var(--db-orange);
+}
+dd {
+  margin-inline-start: 0;
+  margin: 0.1rem 0;
+}
+
+fieldset {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+label {
+    display: block;
+    margin: 0 0.5rem;
+}
+input, textarea {
+  box-sizing: border-box;
+  font: inherit;
+  border: 1px inset var(--db-text);
+  background: var(--db-blue);
+  color: var(--db-text);
+  margin: 0 0.1rem;
+}
+fieldset:disabled {
+  filter: brightness(0.5);
+}
+input:disabled {
+  background-color: var(--db-blue-accent);
+}
+input:invalid {
+  background-color: var(--db-orange);
+}
+input[pattern]:valid {
+  background-color: var(--rdp-green);
+}
+input::placeholder {
+  color: var(--db-text);
+}
+
+header.right-slant, header.left-slant {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  max-width: 800px;
+  margin-top: 10px;
+}
+header.right-slant {
+  padding-left: 0;
+  float: right;
+}
+header.left-slant {
+  padding-right: 0;
+}
+
+.left-slant::after, .right-slant::before {
+  content: ' ';
+
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+}
+.right-slant::before {
+  transform: skew(20deg);
+  right: 20px;
+}
+.left-slant::after {
+  transform: skew(-20deg);
+  left: 20px;
+}
+
+table, tr, td {
+  border: 1px solid var(--db-text);
+  font-weight: normal;
+  border-collapse: collapse;
+  padding: 5px;
+}
+
+a, a:visited {
+  color: var(--db-text);
+}
+
+.button {
+  font-size: 100%;
+  background: var(--db-light-blue);
+  border: 3px outset var(--db-light-blue);
+  border-radius: 1rem;
+  text-align: center;
+  vertical-align: middle;
+  margin: 0.2rem 0.5rem;
+  padding: 0.1rem 0.25rem;
+  user-select: none;
+  cursor: pointer;
+}
+button.button {
+  color: var(--db-text);
+}
+.button.button-large {
+  display: block;
+  width: 300px;
+  margin: 0.5rem auto;
+  padding: 0.5rem;
+}
+a.button {
+  text-decoration: none;
+}
+.button>h3 {
+  margin-top: 0;
+}
+
+#roomcode {
+  display: block;
+  color: var(--db-text);
+  width: 300px;
+  margin: 0.5rem auto;
+  font-size: 150%;
+  text-align: center;
+  text-transform: uppercase;
+}
+#roomcode::placeholder {
+  text-transform: initial;
+}
+.roomcode {
+  display: inline-block;
+  font-family: monospace;
+  background: var(--db-blue);
+  letter-spacing: 1px;
+  padding: 2px 5px;
+  border: 1px solid black;
+  border-radius: 3px;
+}
+.roomcode a {
+  text-decoration: none;
+}
+.roomcode a::after {
+  content: '↗';
+  font-variant: super;
+}
+
+.usertext {
+  white-space: pre-wrap;
+}
+
+.panel {
+  padding: 0 1rem;
+  margin: 1rem 0;
+  color: var(--db-text);
+  background: var(--db-blue-accent);
+  border: 2px solid var(--db-light-blue);
+}
+section.panel {
+  margin: 0.5rem;
+  padding: 0.2rem;
+}
+
+.gl-game-list {
+}
+.gl-game-list main {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  padding: 0;
+  margin: 15px 25px;
+}
+.gl-game-panel {
+  width: 100%;
+}
+
+.hide-on-mobile {
+  display: none;
+}
+@media screen and (min-width: 1024px) {
+  .hide-on-mobile { display: initial; }
+  .gl-game-panel { width: calc(50% - 5px); }
+}
+@media screen and (min-width: 1440px) {
+  .gl-game-panel { width: calc(33% - 2px); }
+}
+
+.game-credit {
+  font-style: italic;
+}
+
+.sync {
+  position: relative;
+}
+
+.sync::after {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 1px solid var(--db-light-blue);
+  background: var(--db-blue);
+  padding: 0.2rem;
+  content: "Editing";
+}
+
+.sync.saved::after {
+  content: "✅ Saved";
+}
+.sync.saving::after {
+  content: "⬆️ Saving";
+}
+.sync.conflict::after {
+  content: "⚠️ Conflict (someone else made a change you would overwrite)";
+}
+
+#endpoints dl {
+  padding: 0;
+  margin: 0;
+}

@@ -2,17 +2,9 @@
 #
 # SPDX-License-Identifier: BSD-2-Clause
 
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "desertbus-games"
 version = "0.0.1"
-
-authors = [
-    {name = "Kitsune"},
-]
 
 description = "This is code to automatically calculate the expected utility of a hand for cribbage as played on Board Game Arena (BGA)."
 readme = "README.md"
@@ -24,31 +16,70 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
-dynamic = ["dependencies"]
+dependencies = [
+    "aiohttp~=3.9",
+    "python-json-logger~=2.0",
+    "Brotli~=1.1.0",
+    "asyncinotify~=4.0.9",
+    "rcssmin~=1.1.2",
+    "rjsmin~=1.2.2",
+    "pillow~=10.4.0",
+    "lru-dict~=1.3.0",
+    "python-dotenv~=1.0.1",
+]
 
-[project.scripts]
-cribbage = "cribbage.__main__:main"
+[project.optional-dependencies]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+dev = ["bastet"]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.bastet]
+disable = []
+
+[tool.black]
+
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+
+select = ["ALL", "TD"]
+ignore = [
+    "D",
+
+    "I001", # Let isort sort the imports
+
+    "ANN101", "ANN102", # Don't require type annotations for 'self' and 'cls'
+
+    "TCH001", "TCH002", "TCH003",  # Don't use if TYPE_CHECKING: blocks.
+
+    "EM101",  # Exceptions can use string literals
+]
 
 [tool.isort]
 profile = "black"
-py_version = 310
-sections = ['FUTURE', 'TYPING', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
-known_typing = ["typing", "types", "collections.abc"]
+py_version = 311
+
+# Section ordering
+sections = ["FUTURE", "TYPING", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+known_typing = ["typing", "types", "typing_extensions", "collections.abc"]
+
+# Always have deferred annotation processing. We rename it so we can use 'annotations' as a name.
+add_imports = ["from __future__ import annotations as _future_annotations"]
+
+# 9 is black compatible, but does not look great
 multi_line_output = 3
 
+[tool.flake8]
+
+max-complexity = 8
+max-line-length = 100
+
 [tool.pylint]
-disable=["missing-module-docstring", "missing-function-docstring", "missing-class-docstring"]
-
-[tool.pydocstyle]
-inherit=false
-add-ignore=["D100", "D101", "D102", "D104", "D105", "D107", "D200", "D202", "D401"]
-ignore-self-only-init=true
-
-[tool.bandit]
-exclude_dirs=["tests"]
+disable=["missing-module-docstring", "missing-function-docstring", "missing-class-docstring", "too-many-instance-attributes"]

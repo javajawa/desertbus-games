@@ -1,0 +1,138 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+/* Game Info Zone */
+#gi-author {
+    font-style: italic;
+}
+#gi-author:not(:empty)::before {
+    content: "by ";
+}
+
+/* Playing Area Zone */
+#play-area {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 90px;
+    grid-row-gap: 0.5rem;
+}
+body.fullscreen, body.full {
+    display: grid;
+    height: 100vh;
+}
+#play-area>main {
+    position: relative; /* make this the offsetParent */
+    grid-area: 1 / 1 / 2 / 2;
+}
+body.fullscreen #play-area>main.no-media {
+    place-self: center;
+    width: 100%;
+}
+#pl-headline {
+    display: block;
+    text-align: center;
+    font-size: 150%;
+}
+#pl-text {
+    display: block;
+    margin: 0.5rem auto;
+    max-width: 40rem;
+}
+body.fullscreen #pl-text, body.fullscreen #pl-headline {
+    font-size: 200%;
+}
+#pl-media {
+    display: block;
+    margin: 0 auto;
+    border: 1px solid var(--db-light-blue);
+    background: var(--db-blue);
+}
+#play-area>#scores, #play-area>#game-actions {
+    grid-area: 2 / 1 / 3 / 2;
+    text-align: center;
+}
+
+#game-actions {
+    text-align: center;
+}
+#game-actions .pre-game, #game-actions .post-game, #game-actions .question, #game-actions .answer {
+    display: none;
+}
+
+#game-actions.pre-game .pre-game, #game-actions.post-game .post-game, #game-actions.question .question, #game-actions.answer .answer {
+    display: initial;
+}
+
+#scores>div {
+    display: inline-block;
+    text-align: center;
+    width: 120px;
+    height: 90px;
+    margin: 0 0.3rem;
+    border: 3px solid var(--db-blue);
+    border-radius: 9px;
+    vertical-align: bottom;
+    overflow: hidden;
+}
+body.fullscreen #scores>div {
+    border-width: 8px;
+    border-radius: 16px;
+}
+#scores div.not-voted {
+    border-color: var(--db-orange);
+}
+#scores div.voted {
+    border-color: var(--rdp-green);
+}
+#scores .score {
+    font-size: 36pt;
+}
+.button.active {
+    background-color: var(--rdp-green);
+    border-color: var(--rdp-green);
+}
+#score-audience {
+    position: relative;
+    z-index: 1;
+}
+#score-audience::after {
+    position: absolute;
+    z-index: 0;
+    background: var(--db-blue);
+    content: ' ';
+    width: 100%;
+    height: var(--voted);
+    top: 0;
+    left: 0;
+}
+
+body.score-overlay {
+    background: #ff00ff none;
+}
+.score-overlay #score-audience::after {
+    background: var(--db-blue-accent);
+}
+.score-overlay #scores>div {
+    width: 100px;
+    height: 70px;
+    margin: 0;
+}
+.score-overlay #scores {
+    position: fixed;
+    left: 1024px;
+    top: 16px;
+    margin: 0;
+    padding: 5px 0;
+}
+.score-overlay #scores>div {
+    font-size: 12pt;
+}
+.score-overlay .roomcode {
+    font-size: 10pt;
+}
+.score-overlay #scores .score {
+    font-size: 24pt;
+}

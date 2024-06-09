@@ -1,0 +1,43 @@
+<!--
+SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+
+SPDX-License-Identifier: BSD-2-Clause
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preload" href="/defs.css" as="style">
+    <link rel="preload" href="/style.css" as="style">
+    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v26/JTUQjIg1_i6t8kCHKm459WxRxC7mw9c.woff2" as="font">
+    <link rel="stylesheet" href="/defs.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="/style.css" crossorigin="anonymous">
+    <title>CatBox Games</title>
+</head>
+<body>
+    <section class="gl-game-list">
+        <header class="left-slant"><h1>Game Options</h1></header>
+        <main>
+            <form method="POST">
+                <label for="scoring"><input type="checkbox" id="scoring" name="scoring" checked>Enable Scoring</label>
+                <fieldset id="teams">
+                    <input name="team" type="text">
+                </fieldset>
+            </form>
+            <article class="panel gl-game-panel">
+                <form action="/join" method="get">
+                    <label for="roomcode"><input type="text" name="room" maxlength="4" id="roomcode" placeholder="Room Code" pattern="[a-zA-Z]{4}" required></label>
+                    <button type="submit" class="button button-large"><h3>Join</h3> a game in progress.</button>
+                </form>
+            </article>
+            <article class="panel gl-game-panel">
+                <a href="/play" class="button button-large"><h3>Start</h3> a new game.</a>
+                <a href="/cms" class="button button-large"><h3>Create</h3> your own episodes.</a>
+                <a href="/info.html" class="button button-large"><h3>Read</h3> the terms and conditions.</a>
+            </article>
+        </main>
+    </section>
+</body>
+</html>

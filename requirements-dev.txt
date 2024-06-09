@@ -1,3 +1,0 @@
--r requirements.txt
-
-mewbot-dev-tools

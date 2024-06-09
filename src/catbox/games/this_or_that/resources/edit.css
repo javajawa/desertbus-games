@@ -1,0 +1,35 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+article {
+    background: var(--db-blue-accent);
+    border: 1px solid var(--db-light-blue);
+    margin: 0.5rem;
+    padding: 1rem;
+    max-width: 750px;
+}
+
+textarea {
+    font-family: inherit;
+    width: 100%;
+}
+
+.delete {
+    position: absolute;
+    left: -1.5rem;
+    font-size: 80%;
+}
+
+img.preview {
+    display: block;
+    margin: 3px auto;
+    max-width: 100%;
+    max-height: 300px;
+}
+
+img.preview[src=""], input[type="file"]:not([blob])+.remove-media {
+    display: none;
+}
