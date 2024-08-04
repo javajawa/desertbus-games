@@ -269,11 +269,9 @@ class DocResponse:
 
         if StaticResponse.ENABLE_OPTIMISATION:
             headers["Link"] = ", ".join(
-                *(f"<{style}>; rel=preload; as=style; crossorigin" for style in self._doc.styles),
-                *(
-                    f"<{script}>; rel=preload; as=script; crossorigin"
-                    for script in self._doc.scripts
-                ),
+                ["<https://fonts.gstatic.com>; rel=preconnect"]
+                + [_preload_string(style, "style") for style in self._doc.styles]
+                + [_preload_string(script, "script") for script in self._doc.scripts],
             )
 
         accept_encoding = request.headers.get("Accept-Encoding", "")
@@ -302,3 +300,10 @@ class DocResponse:
 
 def _http_status_line(request: aiohttp.web.Request, status: int, message: str) -> str:
     return f"HTTP/{request.version.major}.{request.version.minor} {status} {message}"
+
+
+def _preload_string(href: str, as_type: str) -> str:
+    if not href.startswith("http"):
+        href = StaticResponse.PUBLIC_URL + href.removeprefix("/")
+
+    return f'<{href}>; rel="prefetch"; as="{as_type}"; crossOrigin="anonymous"'
