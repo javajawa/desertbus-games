@@ -18,15 +18,6 @@ from catbox.site import CatBoxApplication, OAuthDetails, PublicEndpoint
 
 
 def main() -> None:
-    handler = logging.StreamHandler()
-    handler.setFormatter(JsonFormatter(json_indent=2))  # type: ignore[no-untyped-call]
-    handler.setLevel(logging.INFO)
-    logging.getLogger("catbox").addHandler(handler)
-    logging.getLogger("catbox").setLevel(logging.INFO)
-
-    load_dotenv()
-    loop = asyncio.new_event_loop()
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--oauth-client", default=os.environ.get("CATBOX_CLIENT_ID"))
     parser.add_argument("--oauth-secret", default=os.environ.get("CATBOX_SECRET_ID"))
@@ -35,6 +26,15 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=33333)
     args = parser.parse_args()
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter(json_indent=2 if args.local else None))  # type: ignore[no-untyped-call]
+    handler.setLevel(logging.INFO)
+    logging.getLogger("catbox").addHandler(handler)
+    logging.getLogger("catbox").setLevel(logging.INFO)
+
+    load_dotenv()
+    loop = asyncio.new_event_loop()
 
     listen = public = PublicEndpoint(args.host, args.port)
     if not args.local:
