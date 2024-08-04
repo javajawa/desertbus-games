@@ -345,7 +345,7 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
 
 class ThisOrThatGameManager(ThisOrThatEndpoint):
     def __str__(self) -> str:
-        return "Game Master View"
+        return "Game Manager View"
 
     def _state_representation(self, *, full_teams: bool = True) -> JSONDict:
         base = super()._state_representation(full_teams=full_teams)

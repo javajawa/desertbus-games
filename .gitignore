@@ -13,6 +13,7 @@ reports/
 
 /cert.pem
 /games.db
+/games.db-journal
 /desertbus.service
 /db_games/
 /logs/

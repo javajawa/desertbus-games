@@ -13,7 +13,7 @@ body {
     min-height: 100vh;
 }
 
-#game-info { grid-area: 1 / 1 / 2 / 2; }
+#game-info { grid-area: 1 / 1 / 2 / 2; overflow: auto; }
 #play-area { grid-area: 1 / 2 / 3 / 3; }
 #game-actions { grid-area: 3 / 2 / 4 / 3; }
 #endpoints { grid-area: 2 / 1 / 4 / 2; }

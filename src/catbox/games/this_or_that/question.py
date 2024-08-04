@@ -75,7 +75,7 @@ class ThisOrThatQuestion:
     @property
     def answer(self) -> Answer:
         if self.is_this:
-            return Answer.BOTH if self.is_that else Answer.THAT
+            return Answer.BOTH if self.is_that else Answer.THIS
         if self.is_that:
             return Answer.THAT
 

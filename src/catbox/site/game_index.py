@@ -75,7 +75,7 @@ def episode_panel(episode: EpisodeVersion) -> Element:
             Element(
                 "a",
                 "Audit Content",
-                href=f"/view/{episode.engine_ident}/{episode.id}",
+                href=f"/view/{episode.engine_ident}/{episode.id}/{episode.version}",
                 class_="button",
             ),
         ),

@@ -39,7 +39,7 @@ body.fullscreen #play-area>main.no-media {
 #pl-text {
     display: block;
     margin: 0.5rem auto;
-    max-width: 40rem;
+    max-width: 60rem;
 }
 body.fullscreen #pl-text, body.fullscreen #pl-headline {
     font-size: 200%;
@@ -94,6 +94,9 @@ body.fullscreen #scores>div {
     background-color: var(--rdp-green);
     border-color: var(--rdp-green);
 }
+.button.active::before {
+    content: "✔ ";
+}
 #score-audience {
     position: relative;
     z-index: 1;
@@ -105,7 +108,7 @@ body.fullscreen #scores>div {
     content: ' ';
     width: 100%;
     height: var(--voted);
-    top: 0;
+    bottom: 0;
     left: 0;
 }
 

@@ -161,18 +161,25 @@ export class ThisOrThatSocket extends SocketController {
         }
 
         this._play_area.classList.toggle("no-media", !media);
-        if (media) {
-            const heightAvailable = this._play_area.offsetHeight - this._play_media.offsetTop;
+        this._play_media.style.display = "none";
+
+        if (!media) {
+            this._play_media.removeAttribute("src");
+            this._play_media.style.height = "0";
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            console.log(this._play_area.offsetHeight, this._play_media.offsetTop);
+            const heightAvailable = this._play_area.offsetHeight - this._play_text.offsetTop - this._play_text.offsetHeight - 10;
             const scale = Math.min(heightAvailable / media.height, 4);
 
+            this._play_media.style.display = "";
             this._play_media.setAttribute("src", media.url);
+            this._play_media.style.height = "";
             this._play_media.setAttribute("width", (scale * media.width).toFixed(0));
             this._play_media.setAttribute("height", (scale * media.height).toFixed(0));
-            this._play_media.style.display = "";
-        } else {
-            this._play_media.textContent = "";
-            this._play_media.style.display = "none";
-        }
+        });
     }
 
     _show_pregame() {
@@ -195,7 +202,7 @@ export class ThisOrThatSocket extends SocketController {
                 scores.push([state.audience.score, "Chat"]);
             }
             scores.sort((a, b) => b[0] - a[0]);
-            scoreboard = "The winner is: " + scores[0][1] + "\n\nFinal Scores:\n" + scores.map(([score, team], position) => `${position+1}. ${team} (${score})`).join("\n")
+            scoreboard = "The winner is: " + scores[0][1] + "\n\nFinal Scores:\n" + scores.map(([score, team], position) => `${position+1}. ${team} (${Number.isInteger(score) ? score : score.toFixed(1)})`).join("\n")
         }
 
         this._set_play_area(

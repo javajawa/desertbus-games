@@ -14,6 +14,7 @@ class ThisOrThatAudience extends ThisOrThatSocket {
     }
 
     setup(data) {
+        this._info = div("");
         super.setup(data);
         this._my_team = data.status.self;
 
@@ -24,6 +25,7 @@ class ThisOrThatAudience extends ThisOrThatSocket {
         this._headline = div({"id": "pl-headline"}, "Chat Player");
         this._actions.appendChild(documentFragment(
             this._headline,
+            this._info,
             this._make_buttons(v => this._send({"cmd": "vote", "team": null, "vote": v}), "button button-large question")
         ));
         this._show_question(data.status);
@@ -49,6 +51,13 @@ class ThisOrThatAudience extends ThisOrThatSocket {
             this._actions.classList.toggle(check, state.state === check);
         }
         super.state_change(state);
+
+        switch (state.state) {
+            case "question": this._info.textContent = ""; break;
+            case "answer": this._info.textContent = "The correct answer was " + state.question.headline + ". (waiting for next question)"; break;
+            case "pre-game": this._info.textContent = "Waiting for the game to start"; break;
+            case "post-game": this._info.textContent = "Thanks for playing!"; break;
+        }
     }
 
     voted(data) {
