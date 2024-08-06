@@ -12,7 +12,7 @@ import os
 from dotenv import load_dotenv
 
 import catbox.static
-from catbox.games import ThisOrThisEngine
+from catbox.games import OnlyConnectEngine, ThisOrThisEngine
 from catbox.logger import JsonFormatter
 from catbox.site import CatBoxApplication, OAuthDetails, PublicEndpoint
 
@@ -46,7 +46,7 @@ def main() -> None:
 
     app = CatBoxApplication(
         loop,
-        {"thisorthat": ThisOrThisEngine},
+        {"thisorthat": ThisOrThisEngine, "onlyconnect": OnlyConnectEngine},
         oauth=OAuthDetails(args.oauth_client, args.oauth_secret),
         listen=listen,
         public=public,
