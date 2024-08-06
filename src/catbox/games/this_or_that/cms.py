@@ -77,7 +77,7 @@ class ThisOrThatPreview(Endpoint):
                 ),
                 Element("main", *articles, id="main"),
             ),
-            styles=["/defs.css", "/style.css"],
+            styles=["/defs.css", "/style.css", f"/{self.room.engine.ident}/edit.css"],
         )
 
         return DocResponse(doc)
@@ -101,10 +101,10 @@ class ThisOrThatPreview(Endpoint):
                 if question.question_text
                 else ""
             ),
-            Element("img", src=question.question_media.url) if question.question_media else "",
+            Element("img", src=question.question_media.url, class_="preview") if question.question_media else "",
             Element("h4", "Answer: ", answer),
             Element("p", question.answer_text, class_="usertext") if question.answer_text else "",
-            Element("img", src=question.answer_media.url) if question.answer_media else "",
+            Element("img", src=question.answer_media.url, class_="preview") if question.answer_media else "",
             class_=" ".join(
                 [
                     "panel",

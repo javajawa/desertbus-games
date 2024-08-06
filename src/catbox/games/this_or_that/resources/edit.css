@@ -33,3 +33,12 @@ img.preview {
 img.preview[src=""], input[type="file"]:not([blob])+.remove-media {
     display: none;
 }
+
+@media screen and (max-width: 800px) {
+    input[type="file"] {
+        width: 100%;
+    }
+    textarea {
+        min-height: 4rem;
+    }
+}
