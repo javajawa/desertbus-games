@@ -37,7 +37,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.bastet]
-disable = []
+disable = ["bandit"]
 
 [tool.black]
 
@@ -82,4 +82,18 @@ max-complexity = 8
 max-line-length = 100
 
 [tool.pylint]
-disable=["missing-module-docstring", "missing-function-docstring", "missing-class-docstring", "too-many-instance-attributes"]
+disable=[
+    # Doc Strings (to be done at some point)
+    "missing-module-docstring",
+    "missing-function-docstring",
+    "missing-class-docstring",
+    # Class design oddities
+    "too-many-instance-attributes",
+    "too-few-public-methods",
+    "too-many-arguments",
+    # Covered (better) by Ruff
+    "broad-exception-caught",
+    "unused-argument",
+    "protected-access",
+    "fixme",
+]

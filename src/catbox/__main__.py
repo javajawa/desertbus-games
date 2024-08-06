@@ -29,8 +29,9 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=33333)
     args = parser.parse_args()
 
+    indent = 2 if args.local else None
     handler = logging.StreamHandler()
-    handler.setFormatter(JsonFormatter(json_indent=2 if args.local else None))  # type: ignore[no-untyped-call]
+    handler.setFormatter(JsonFormatter(json_indent=indent))  # type: ignore[no-untyped-call]
     handler.setLevel(logging.INFO)
     logging.getLogger("catbox").addHandler(handler)
     logging.getLogger("catbox").setLevel(logging.INFO)

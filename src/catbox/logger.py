@@ -17,7 +17,10 @@ _SysExcInfoType = (
 
 
 class JsonFormatter(_JsonFormatter):
-    def formatException(self, ei: _SysExcInfoType) -> dict[str, Any] | None:  # type: ignore[override]
+    def formatException(  # type: ignore[override]
+        self,
+        ei: _SysExcInfoType,
+    ) -> dict[str, Any] | None:
         exc_type, exc_value, exc_traceback = ei
         if exc_type is None or exc_value is None:
             return None

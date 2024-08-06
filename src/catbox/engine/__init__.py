@@ -9,7 +9,9 @@ from typing import TypeAlias
 from .engine import GameEngine, OptionSupport
 from .episode import EpisodeMeta, EpisodeState, EpisodeVersion
 
-JSON: TypeAlias = None | int | str | bool | float | list["JSON"] | dict[str, "JSON"]
+JSON: TypeAlias = (  # pylint: disable=invalid-name
+    None | int | str | bool | float | list["JSON"] | dict[str, "JSON"]
+)
 JSONDict: TypeAlias = dict[str, "JSON"]
 
 
