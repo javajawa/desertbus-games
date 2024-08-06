@@ -6,10 +6,10 @@
 
 :root {
     --db-text: #ffffff;
-    --db-blue: #233ea2; /*#24528f;*/
-    --db-blue-accent: #24528f;
-    --db-orange: #e6892c; /*#d38f3d;*/
-    --db-light-blue: #4bbdfb; /*#4abbff;*/
+    --db-blue: #29377d; /*#233ea2; /*#24528f;*/
+    --db-blue-accent: #4960ab; /*#24528f;*/
+    --db-orange: #e58a2a; /*#e6892c; /*#d38f3d;*/
+    --db-light-blue: #49bbff; /*#4bbdfb; /*#4abbff;*/
     --rdp-green: #126d2e;
 }
 
