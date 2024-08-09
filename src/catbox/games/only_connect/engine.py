@@ -18,6 +18,7 @@ from .episode import (
     MissingVowelsGroup,
     OnlyConnectEpisode,
     OnlyConnectQuestion,
+    SixQuestions,
 )
 
 
@@ -37,6 +38,7 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
     @property
     def description(self) -> str:
         return "Only Connect"  # TODO @ben: write the description.
+        # CATBOX-1
 
     @property
     def cms_enabled(self) -> bool:
@@ -53,7 +55,7 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
             connections.extend(
                 [OnlyConnectQuestion.default()] * (QUESTIONS_PER_ROUND - len(connections)),
             )
-            episode.connections_round = tuple(
+            episode.connections_round = SixQuestions(
                 OnlyConnectQuestion(**question) for question in connections
             )
 
@@ -62,19 +64,15 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
             completions.extend(
                 [OnlyConnectQuestion.default()] * (QUESTIONS_PER_ROUND - len(completions)),
             )
-            assert len(completions) == 6
-            episode.connections_round = tuple(
+            episode.connections_round = SixQuestions(
                 OnlyConnectQuestion(**question) for question in completions
             )
 
         walls = contents.get("connecting_walls")
-        if isinstance(walls, list) and len(walls) == 2:
-            walls.extend([ConnectingWall.default()] * (MAX_TEAMS - len(walls)))
-            episode.connecting_walls = tuple(
-                ConnectingWall(
-                    *(OnlyConnectQuestion(**question) for question in wall["connections"]),
-                )
-                for wall in walls
+        if isinstance(walls, list):
+            episode.connecting_walls = (
+                ConnectingWall(OnlyConnectQuestion(**question) for question in walls[0]),
+                ConnectingWall(OnlyConnectQuestion(**question) for question in walls[1]),
             )
 
         missing_vowels = contents.get("missing_vowels")
@@ -93,11 +91,11 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
     def supports_audience(self) -> OptionSupport:
         return OptionSupport.NOT_SUPPORTED
 
-    def play_episode(self, episode: OnlyConnectEpisode, options: RoomOptions) -> Room:
+    def play_episode(self, episode: OnlyConnectEpisode, _: RoomOptions) -> Room:
         return OnlyConnectViewRoom(self._logger, episode)
 
     def edit_episode(self, episode: OnlyConnectEpisode) -> Room:
-        return OnlyConnectEditRoom(self._logger, episode)
+        return OnlyConnectEditRoom(self._logger, self, episode)
 
     def view_episode(self, episode: OnlyConnectEpisode) -> Room:
         return OnlyConnectViewRoom(self._logger, episode)

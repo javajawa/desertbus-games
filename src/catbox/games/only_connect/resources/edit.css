@@ -4,35 +4,69 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+details.panel {
+    max-width: 60rem;
+    padding: 0;
+}
+details.panel>summary, details.panel>p {
+    margin: 0 0.5rem;
+}
+details.panel>p {
+    margin-bottom: 0.5rem;
+}
+
 fieldset:disabled>fieldset {
     display: none;
 }
 
 fieldset.panel {
     padding: 0.5rem 0.5rem 0.3rem 0;
+    margin: 5px 0;
 }
 
-@media screen and (min-width: 968px) {
+h3.conn-title { grid-area: 1 / 1 / 2 / 5; margin: 0 0.5rem; }
+label.connection, label.description { display: block; }
+label.connection { grid-area: 4 / 1 / 5 / 3; }
+label.description { grid-area: 5 / 1 / 6 / 3; }
+label.element0 { grid-area: 2 / 1 / 3 / 2; }
+label.element1 { grid-area: 2 / 2 / 3 / 3; }
+label.element2 { grid-area: 3 / 1 / 4 / 2; }
+label.element3 { grid-area: 3 / 2 / 4 / 3; }
+
+.connection input, .description textarea { width: 100%; display: block; }
+.connection span, .description span { width: auto; display: block; }
+
+@media screen and (min-width: 920px) {
     .oc-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: 1.4rem 1fr 1.4rem 1.4rem;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, 1.4rem) 1fr;
         grid-column-gap: 0.3rem;
         grid-row-gap: 0.3rem;
     }
+    label.connection { grid-area: 4 / 1 / 5 / 3; display: grid; grid-template-columns: 14rem 1fr; }
+    label.description { grid-area: 5 / 1 / 6 / 3; display: grid; grid-template-columns: 14rem 1fr; }
 }
-
-
-label.connection { grid-area: 1 / 1 / 2 / 2; }
-input.connection { grid-area: 1 / 2 / 2 / 5; display: block; width: 100%; }
-label.description { grid-area: 2 / 1 / 3 / 2; }
-textarea.description { grid-area: 2 / 2 / 3 / 5; display: block; width: 100%; }
-label.element0 { grid-area: 3 / 1 / 4 / 3; }
-label.element1 { grid-area: 3 / 3 / 4 / 5; }
-label.element2 { grid-area: 4 / 1 / 5 / 3; }
-label.element3 { grid-area: 4 / 3 / 5 / 5; }
 
 label>span {
     display: inline-block;
     width: 6rem;
+}
+
+summary>h2 {
+    display: inline-block;
+}
+
+label[editor], input[editor] {
+    position: relative;
+    outline: 2px solid var(--editor);
+}
+label[editor]::before, input[editor]::before {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    content: attr(editor);
+    height: 12px;
+    background: var(--editor);
+    font-size: 10px;
 }
