@@ -69,9 +69,8 @@ class OnlyConnectEditor extends SocketController
     }
 
     /**
-     *
      * @param {Event} event
-     * @private
+     * @param {Number} timeout
      */
     _on_field_change(event, timeout = null) {
         if (timeout) {
@@ -87,10 +86,12 @@ class OnlyConnectEditor extends SocketController
         }
 
         const input = event.target;
+        const value = input.value;
         const id = input.id;
+        input.setAttribute("data-last-hash", cyrb53(value).toString())
 
         const [section, question, element] = id.split(".");
-        this._send({"cmd": "update", "section": section, "question": question, "element": element, "value": input.value})
+        this._send({"cmd": "update", "section": section, "question": question, "element": element, "value": value})
     }
 
     _on_field_focus(event) {

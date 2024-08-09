@@ -120,10 +120,10 @@ class OnlyConnectEditRoom(Room):
         return "Only Connect CMS"
 
     async def stop(self) -> None:
-        self.save_timer = None
         await super().stop()
-        self.save_task.cancel()
+        self.save_timer = None
         await self.save_task
+        self._engine.save(self.episode)
 
     @property
     def default_endpoint(self) -> Endpoint:
@@ -256,6 +256,7 @@ class OnlyConnectEditEndpoint(Endpoint):
             self._error("Attempting to enable invalid section %s", section, socket=socket)
             return
 
+        self.room.queue_save()
         await self._fanout({"cmd": "update", **episode.json()})
 
     @command
@@ -274,6 +275,7 @@ class OnlyConnectEditEndpoint(Endpoint):
             self._error("Attempting to disable invalid section %s", section, socket=socket)
             return
 
+        self.room.queue_save()
         await self._fanout({"cmd": "update", **episode.json()})
 
     @command
