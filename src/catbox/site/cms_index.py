@@ -77,9 +77,6 @@ def version_link(
         title=title or f"{verb.title()} version {version}",
     )
 
-    # TODO @ben: Set up useful link titles
-    #      CATBOX-1
-
 
 def episode_panel(episode: EpisodeMeta) -> Element:
     published = episode.version(EpisodeState.PUBLISHED)

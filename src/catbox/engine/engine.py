@@ -316,7 +316,7 @@ class GameEngine(abc.ABC, Generic[Episode]):
                     WHERE episode_id = ? AND version = ? AND state = ?""",
             (state, episode.id, episode.version, episode.state),
         )
-        episode._status = state
+        episode._status = state  # noqa: SLF001 access better than trying to replace the object.
 
         if state not in [EpisodeState.DISCARDED, EpisodeState.SUPERSEDED]:
             # Ensure state uniqueness, by moving others to Discard / Superseded

@@ -13,6 +13,7 @@ SPDX-License-Identifier: CC0-1.0
 - in game view, when only one line of text, make it centered
 - player control buttons don't highlight after disconnect
 - Skip to end button (and show the current question number and total on GM screen)
+- Make branded error pages for all known error states.
 
 Ideas?
 - confirmation / lock-in of the controls

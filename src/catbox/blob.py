@@ -98,7 +98,7 @@ class BlobManager:
         return response
 
     async def _blob_upload(self, request: Request) -> ResponseProtocol:
-        request._client_max_size = 4 * 1024 * 1024  #
+        request._client_max_size = 4 * 1024 * 1024  # noqa: SLF001 - hacking around private stuff.
         content = await request.read()
 
         blob_id = hashlib.sha256(content, usedforsecurity=False).hexdigest()

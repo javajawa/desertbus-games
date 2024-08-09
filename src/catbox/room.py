@@ -13,6 +13,7 @@ import dataclasses
 import datetime
 import json
 import logging
+import uuid
 
 import yarl
 from aiohttp import http_websocket, web
@@ -92,18 +93,27 @@ class Room(abc.ABC):
 
 class Socket(web.WebSocketResponse):
     remote: str
+    socket_id: str
     session: Session
 
     def __init__(self, session: Session, request: Request) -> None:
         super().__init__(receive_timeout=2.5, heartbeat=1)
 
-        self.remote = request.remote or "[unknown endpoint]"
+        self.remote = (
+            request.headers.get("x-forwarded-for") or request.remote or "[unknown endpoint]"
+        )
+        self.socket_id = str(uuid.uuid4())
         self.session = session
 
+    @property
+    def username(self) -> str:
+        return self.session.user.user_name if self.session.user else self.session.cookie
+
+    def __repr__(self) -> str:
+        return f"Socket<user={self.username},remote={self.remote},socket_id={self.socket_id[0:8]}>"
+
     def __str__(self) -> str:
-        if self.session.user:
-            return "Socket[" + self.remote + " (" + self.session.user.user_name + ")]"
-        return "Socket[" + self.remote + " (" + self.session.cookie + ")]"
+        return f"{self.username} @ {self.remote}/{self.socket_id[0:4]}"
 
 
 class Endpoint(abc.ABC):
@@ -134,26 +144,27 @@ class Endpoint(abc.ABC):
         ex: BaseException,
         msg: str,
         *args: str,
+        socket: Socket | None = None,
     ) -> None:
         self.room.logger.error(
             msg,
             *args,
             exc_info=ex,
-            extra={"room": self.room, "endpoint": self},
+            extra={"room": self.room, "endpoint": self, "socket": socket},
         )
 
-    def _info(self, msg: str, *args: str) -> None:
+    def _info(self, msg: str, *args: str, socket: Socket | None = None) -> None:
         self.room.logger.info(
             msg,
             *args,
-            extra={"room": self.room, "endpoint": self},
+            extra={"room": self.room, "endpoint": self, "socket": socket},
         )
 
-    def _error(self, msg: str, *args: str) -> None:
+    def _error(self, msg: str, *args: str, socket: Socket | None = None) -> None:
         self.room.logger.error(
             msg,
             *args,
-            extra={"room": self.room, "endpoint": self},
+            extra={"room": self.room, "endpoint": self, "socket": socket},
         )
 
     async def _fanout(self, data: JSONDict, *, log: bool = True) -> list[Exception]:
@@ -191,14 +202,14 @@ class Endpoint(abc.ABC):
     async def on_join(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         pass
 
-    async def on_close(self, _: Socket) -> None:
-        self._info("Socket closed")
+    async def on_close(self, socket: Socket) -> None:
+        self._info("Socket closed", socket=socket)
 
     async def stop(self) -> None:
         self._stopped = True
         sockets = self._sockets.copy()
         for socket in sockets:
-            self._info("Closing socket %s due to stop request", str(socket))
+            self._info("Closing socket due to stop request", socket=socket)
             await socket.send_json({"cmd": "close"})
             await socket.close()
 
@@ -207,18 +218,19 @@ class Endpoint(abc.ABC):
             return web.HTTPNotFound()
 
         socket = Socket(ctx.session, request)
-        self._info("Accepting new connection")
+        self._info("Accepting new connection", socket=socket)
         await socket.prepare(request)
 
         self._sockets.add(socket)
         if task := asyncio.current_task():
-            task.set_name(task.get_name() + " - " + str(socket))
+            task.set_name(repr(socket))
 
         # Process all messages in this socket
         await self._process_messages(socket)
 
         self._sockets.discard(socket)
-        self._info("Disconnecting %s", str(socket))
+        self._info("Disconnecting %s", str(socket), socket=socket)
+        await self.on_close(socket)
 
         return socket  # type: ignore[return-value]
 
@@ -234,14 +246,12 @@ class Endpoint(abc.ABC):
             self.room.ping()
             await self._parse_message(socket, message)
 
-        await self.on_close(socket)
-
     async def _parse_message(self, socket: Socket, message: http_websocket.WSMessage) -> None:
         # Decode the incoming request
         try:
             data = message.json()
         except json.JSONDecodeError as ex:
-            self._exception(ex, "Invalid JSON")
+            self._exception(ex, "Invalid JSON", socket=socket)
             return await socket.send_json(
                 {
                     "cmd": "error",
@@ -257,7 +267,7 @@ class Endpoint(abc.ABC):
 
         # Check the requested command is an RPC command
         if not cmd or not hasattr(cmd, "__is_rpc__"):
-            self._error("Invalid command %s", cmd_name)
+            self._error("Invalid command %s", cmd_name, socket=socket)
             return await socket.send_json(
                 {"cmd": "error", "message": f"Invalid command {cmd_name}"},
             )
@@ -267,11 +277,11 @@ class Endpoint(abc.ABC):
 
         # Execute the command
         try:
-            self._info("Running command %s", cmd_name)
+            self._info("Running command %s", cmd_name, socket=socket)
             if resp := await cmd(socket, **data):
                 await socket.send_json(resp)
         except BaseException as ex:  # noqa: BLE001 - Being passed to logger
-            self._exception(ex, "Error processing command %s", cmd)
+            self._exception(ex, "Error processing command %s", cmd, socket=socket)
             await socket.send_json(
                 {
                     "cmd": "error",

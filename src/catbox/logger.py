@@ -7,6 +7,7 @@ from __future__ import annotations as _future_annotations
 from types import TracebackType
 from typing import Any
 
+import logging
 import traceback
 
 from pythonjsonlogger.jsonlogger import JsonFormatter as _JsonFormatter
@@ -17,7 +18,18 @@ _SysExcInfoType = (
 
 
 class JsonFormatter(_JsonFormatter):
-    def formatException(  # type: ignore[override]
+    def add_fields(
+        self,
+        log_record: dict[str, Any],
+        record: logging.LogRecord,
+        message_dict: dict[str, Any],
+    ) -> None:
+        log_record["level"] = record.levelname
+        log_record["logger"] = record.name
+
+        super().add_fields(log_record, record, message_dict)
+
+    def formatException(  # type: ignore[override]  # noqa: N802 inherited function name
         self,
         ei: _SysExcInfoType,
     ) -> dict[str, Any] | None:

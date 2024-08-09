@@ -36,7 +36,7 @@ class Request(aiohttp.web.BaseRequest):
             protocol,
             payload_writer,
             task,
-            asyncio.get_running_loop(),
+            task.get_loop(),
         )
 
 

@@ -34,7 +34,7 @@ from .state import CatBoxContext, CatBoxRoute, CatBoxState, OAuthDetails, Public
 
 
 class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
-    def __init__(
+    def __init__(  # noqa: PLR0913 all args important.
         self,
         loop: asyncio.AbstractEventLoop,
         engines: dict[str, type[GameEngine[Any]]],
@@ -386,9 +386,6 @@ def static(
 
 
 def not_found() -> CatBoxRoute:
-    # TODO @ben: Make this look nice!
-    #      Actually, work on errors in general...
-    #      CATBOX-1
     async def call(_c: RequestContext, _r: Request) -> ResponseProtocol:
         return HTTPNotFound()
 

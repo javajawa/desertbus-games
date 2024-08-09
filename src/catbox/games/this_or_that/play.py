@@ -149,7 +149,7 @@ class ThisOrThatRoom(Room):
         self,
         coroutines: Iterable[Coroutine[Any, Any, list[Exception] | Exception | None]],
         msg: str,
-        *args: Any,
+        *args: Any,  # noqa: ANN401 - No way to type this.
     ) -> None:
         results = await asyncio.gather(*coroutines, return_exceptions=True)
 
@@ -330,12 +330,12 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
         }
 
     @command
-    async def vote(self, socket: Socket, team: str, vote: str) -> JSONDict | None:  # noqa: ARG002
+    async def vote(self, socket: Socket, team: str, vote: str) -> JSONDict | None:
         self.room.ping()
 
         # Ensure this endpoint can vote for this team
         if not isinstance(team, str) or not self._can_vote(team):
-            self.room.logger.error("Rejecting for for %s in %s", team, self, extra={"room": self})
+            self._error("Rejecting un-authed vote for %s", team, socket=socket)
             return None
 
         voted = Vote(vote) if vote is not None else None
@@ -394,9 +394,9 @@ class ThisOrThatGameManager(ThisOrThatEndpoint):
         }
 
     @command
-    async def start(self, _: Socket) -> JSONDict | None:
+    async def start(self, socket: Socket) -> JSONDict | None:
         if self.room.state != GameState.GAME_STARTING:
-            self._error("Attempting to 'start' in progress game.")
+            self._error("Attempting to 'start' in progress game.", socket=socket)
             return {"cmd": "error", "message": "Game already started."}
 
         await self.room.next_question()
@@ -501,6 +501,7 @@ class ThisOrThatAudience(ThisOrThatEndpoint):
         self.status.vote_record.pop(socket.session.cookie, None)
         self.status.members.discard(socket.session.cookie)
         self.room.queue_audience_update()
+        await super().on_close(socket)
 
     @command
     async def setup(self, socket: Socket) -> JSONDict | None:
@@ -509,7 +510,7 @@ class ThisOrThatAudience(ThisOrThatEndpoint):
         return await super().setup(socket)
 
     @command
-    async def vote(self, socket: Socket, team: str, vote: str) -> JSONDict:
+    async def vote(self, socket: Socket, team: str, vote: str) -> JSONDict:  # noqa: ARG002
         voted = Vote(vote)
         self.status.vote_record[socket.session.cookie] = voted
         self.status.members.add(socket.session.cookie)
