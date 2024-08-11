@@ -20,6 +20,7 @@ from .episode import (
     OnlyConnectQuestion,
     SixQuestions,
 )
+from .play import OnlyConnectRoom
 
 
 class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
@@ -99,8 +100,8 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
     def supports_audience(self) -> OptionSupport:
         return OptionSupport.NOT_SUPPORTED
 
-    def play_episode(self, episode: OnlyConnectEpisode, _: RoomOptions) -> Room:
-        return OnlyConnectViewRoom(self._logger, episode)
+    def play_episode(self, episode: OnlyConnectEpisode, options: RoomOptions) -> Room:
+        return OnlyConnectRoom(self._logger, episode, options)
 
     def edit_episode(self, episode: OnlyConnectEpisode) -> Room:
         return OnlyConnectEditRoom(self._logger, self, episode)

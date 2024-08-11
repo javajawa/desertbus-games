@@ -61,8 +61,8 @@ class Room(abc.ABC):
     _stopped: bool
     _ping: datetime.datetime
 
-    def __init__(self, logger: logging.Logger, **kwargs: Endpoint) -> None:
-        self.endpoints = kwargs
+    def __init__(self, logger: logging.Logger, **kwargs: Endpoint | None) -> None:
+        self.endpoints = {k: v for k, v in kwargs.items() if v}
         self.logger = logger
         self._stopped = False
         self.ping()

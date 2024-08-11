@@ -35,7 +35,7 @@ async def engine_index(engine: GameEngine[EpisodeVersion]) -> Element:
         case OptionSupport.OPTIONAL:
             rule_summary += f"optional scoring for 1-{engine.max_teams} teams"
 
-    match engine.scoring_mode:
+    match engine.supports_audience:
         case OptionSupport.REQUIRED:
             rule_summary += ", with audience"
         case OptionSupport.OPTIONAL:
