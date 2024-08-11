@@ -3,13 +3,26 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 import {SocketController, cyrb53} from "/socket.js";
+import {elemGenerator} from "/elems.js";
 
+
+const fieldset = elemGenerator("fieldset");
+const label = elemGenerator("label");
+const input = elemGenerator("input");
+const span = elemGenerator("span");
 
 class Section
 {
-    constructor(base_id) {
+    constructor(base_id, sender) {
         this.panel = document.getElementById(base_id);
         this.toggle = this.panel.querySelector("legend input[type=\"checkbox\"]");
+        this.toggle.addEventListener("change", e => {
+            e.stopPropagation();
+            sender({
+                "cmd": e.target.checked ? "enable_section" : "disable_section",
+                "section": base_id
+            })
+        });
     }
 }
 
@@ -18,13 +31,19 @@ class OnlyConnectEditor extends SocketController
     connections_section;
     completions_section;
     walls_section;
-    vowels_section;
+    missing_vowels_section;
 
     save_timer;
     last_focus;
 
     constructor() {
         super();
+
+        document.getElementById("title").addEventListener("change", e => this._set_meta(e));
+        document.getElementById("title").addEventListener("keypress", e => this._set_meta(e, 500));
+        document.getElementById("description").addEventListener("change", e => this._set_meta(e));
+        document.getElementById("description").addEventListener("keypress", e => this._set_meta(e, 500));
+        document.getElementById("submit").addEventListener("click", () => this._send({"cmd": "submit"}));
 
         document.getElementById("main")
             .addEventListener("change", e => this._on_field_change(e));
@@ -35,32 +54,15 @@ class OnlyConnectEditor extends SocketController
             .addEventListener("focusin", e => this._on_field_focus(e));
         this.last_focus = null;
 
-        this.connections_section = new Section("connections");
-        this.connections_section.toggle.addEventListener("change", e => {
-            e.stopPropagation();
-            this._send({
-                "cmd": e.target.checked ? "enable_section" : "disable_section",
-                "section": "connections"
-            })
-        });
+        this.connections_section = new Section("connections", this._send.bind(this));
+        this.completions_section = new Section("completions", this._send.bind(this));
+        this.walls_section = new Section("connecting_walls", this._send.bind(this));
+        this.missing_vowels_section = new Section("missing_vowels", this._send.bind(this));
 
-        this.completions_section = new Section("completions");
-        this.completions_section.toggle.addEventListener("change", e => {
-            e.stopPropagation();
-            this._send({
-                "cmd": e.target.checked ? "enable_section" : "disable_section",
-                "section": "completions"
-            })
-        });
-
-        this.walls_section = new Section("connecting_walls");
-        this.walls_section.toggle.addEventListener("change", e => {
-            e.stopPropagation();
-            this._send({
-                "cmd": e.target.checked ? "enable_section" : "disable_section",
-                "section": "connecting_walls"
-            })
-        });
+        this.missing_vowels_section.panel.querySelector("button").addEventListener("click", e => {
+            e.preventDefault();
+            this._send({"cmd": "update", "section": "missing_vowels", "question": "new", "element": "", "value": ""});
+        })
     }
 
     _on_ws_open() {
@@ -73,7 +75,13 @@ class OnlyConnectEditor extends SocketController
      * @param {Number} timeout
      */
     _on_field_change(event, timeout = null) {
+        const input = event.target;
+        const id = input.id;
+
         if (timeout) {
+            if (id.includes(".new")) {
+                return;
+            }
             if (!this.save_timer) {
                 this.save_timer = window.setTimeout(() => this._on_field_change(event), timeout);
             }
@@ -85,18 +93,41 @@ class OnlyConnectEditor extends SocketController
             this.save_timer = null;
         }
 
-        const input = event.target;
         const value = input.value;
-        const id = input.id;
-        input.setAttribute("data-last-hash", cyrb53(value).toString())
+        if (id.includes(".new")) {
+            input.value = "";
+        } else {
+            input.setAttribute("data-last-hash", cyrb53(value).toString());
+        }
 
         const [section, question, element] = id.split(".");
         this._send({"cmd": "update", "section": section, "question": question, "element": element, "value": value})
     }
 
+    _set_meta(event = null, timeout = null) {
+        if (event) event.stopPropagation();
+        if (timeout) {
+            if (!this.save_timer) {
+                this.save_timer = window.setTimeout(() => this._set_meta(), timeout);
+            }
+            return;
+        }
+
+        if (this.save_timer) {
+            window.clearTimeout(this.save_timer);
+            this.save_timer = null;
+        }
+
+        this._send({
+            "cmd": "set_meta",
+            "title": document.getElementById("title").value,
+            "description": document.getElementById("description").value
+        });
+    }
+
     _on_field_focus(event) {
         const input = event.target.closest("input[id],textarea[id]")
-        const id = input?.id || null;
+        const id = (input?.id?.replace(/-prompt$/, "") || null);
 
         if (this.last_focus === id) {
             return;
@@ -139,6 +170,7 @@ class OnlyConnectEditor extends SocketController
         this._update_connections(data);
         this._update_completions(data);
         this._update_walls(data);
+        this._update_missing_vowels(data);
     }
 
     _update_connections(data) {
@@ -204,6 +236,66 @@ class OnlyConnectEditor extends SocketController
 
         this.walls_section.toggle.checked = true;
         this.walls_section.panel.removeAttribute("disabled");
+    }
+
+    _update_missing_vowels(data) {
+        if (data.missing_vowels === null) {
+            this.missing_vowels_section.toggle.checked = false;
+            this.missing_vowels_section.panel.setAttribute("disabled", true);
+            return;
+        }
+
+        data.missing_vowels.forEach((group, idx) => {
+            const id = "missing_vowels." + idx.toString();
+            let currentBlock = document.getElementById(id);
+
+            if (group === null) {
+                if (currentBlock) currentBlock.parentElement.removeChild(currentBlock);
+                return;
+            }
+
+            if (!currentBlock) {
+                currentBlock = fieldset(
+                    {"id": id},
+                    label({"for": id + ".connection"}, "Connection:", input({"id": id + ".connection"})),
+                    label({"for": id + ".new.0"}, "New Entry:", input({"id": id + ".new.0"})),
+                )
+                this.missing_vowels_section.panel.insertBefore(
+                    currentBlock,
+                    this.missing_vowels_section.panel.querySelector("button"),
+                );
+            }
+
+            [...currentBlock.querySelectorAll("[row]")].forEach(elem => elem.classList.add("to-delete"));
+
+            group.words.forEach(([idx, answer, prompt, _]) => {
+                let elem = currentBlock.querySelector(`[row="${idx}"]`);
+                if (!elem) {
+                    elem = label(
+                        {"row": idx.toString(), "for": `${id}.${idx}.0`},
+                        input({"id": `${id}.${idx}-prompt`}),
+                        span(" ⇒ "),
+                        input({"id": `${id}.${idx}`}),
+                    )
+                    currentBlock.insertBefore(elem, currentBlock.lastElementChild);
+                }
+                elem.classList.remove("to-delete");
+
+                update(`${id}.${idx}`, answer);
+                update(`${id}.${idx}-prompt`, prompt);
+                document.getElementById(`${id}.${idx}-prompt`).setAttribute(
+                    "pattern",
+                    "^" + answer.toUpperCase().replaceAll(/[ AIEOU]/g, "").split("").join(" ?") + "$"
+                );
+            });
+
+            [...currentBlock.querySelectorAll("[row].to-delete")].forEach(
+                elem => elem.parentElement.removeChild(elem)
+            );
+        });
+
+        this.missing_vowels_section.toggle.checked = true;
+        this.missing_vowels_section.panel.removeAttribute("disabled");
     }
 }
 

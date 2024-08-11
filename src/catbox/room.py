@@ -36,6 +36,15 @@ def command(
     func: Callable[P, Awaitable[JSONDict | None]],
 ) -> Callable[P, Awaitable[JSONDict | None]]:
     func.__is_rpc__ = True  # type: ignore[attr-defined]
+    func.__rpc_log__ = True  # type: ignore[attr-defined]
+    return func
+
+
+def command_no_log(
+    func: Callable[P, Awaitable[JSONDict | None]],
+) -> Callable[P, Awaitable[JSONDict | None]]:
+    func.__is_rpc__ = True  # type: ignore[attr-defined]
+    func.__rpc_log__ = False  # type: ignore[attr-defined]
     return func
 
 
@@ -277,7 +286,8 @@ class Endpoint(abc.ABC):
 
         # Execute the command
         try:
-            self._info("Running command %s", cmd_name, socket=socket)
+            if cmd.__rpc_log__:
+                self._info("Running command %s", cmd_name, socket=socket)
             if resp := await cmd(socket, **data):
                 await socket.send_json(resp)
         except BaseException as ex:  # noqa: BLE001 - Being passed to logger

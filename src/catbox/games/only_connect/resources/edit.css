@@ -4,9 +4,17 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+details.panel, article.panel {
+    max-width: 48rem;
+}
 details.panel {
-    max-width: 60rem;
     padding: 0;
+}
+article.panel {
+    padding: 0.5rem 0;
+}
+article.panel>h2 {
+    margin: 0 0.5rem 0.5rem;
 }
 details.panel>summary, details.panel>p {
     margin: 0 0.5rem;
@@ -33,8 +41,15 @@ label.element1 { grid-area: 2 / 2 / 3 / 3; }
 label.element2 { grid-area: 3 / 1 / 4 / 2; }
 label.element3 { grid-area: 3 / 2 / 4 / 3; }
 
-.connection input, .description textarea { width: 100%; display: block; }
+.connection input, textarea { width: 100%; display: block; }
 .connection span, .description span { width: auto; display: block; }
+
+label[row] {
+    margin: 0.8rem 0;
+}
+label[row]>span {
+    display: none;
+}
 
 @media screen and (min-width: 920px) {
     .oc-grid {
@@ -46,6 +61,10 @@ label.element3 { grid-area: 3 / 2 / 4 / 3; }
     }
     label.connection { grid-area: 4 / 1 / 5 / 3; display: grid; grid-template-columns: 14rem 1fr; }
     label.description { grid-area: 5 / 1 / 6 / 3; display: grid; grid-template-columns: 14rem 1fr; }
+}
+@media screen and (min-width: 720px) {
+    label[row] { margin: 0 }
+    label[row]>span { display: inline; }
 }
 
 label>span {

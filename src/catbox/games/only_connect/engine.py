@@ -37,8 +37,12 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
 
     @property
     def description(self) -> str:
-        return "Only Connect"  # TODO @ben: write the description.
-        # CATBOX-1
+        return """
+        The British game show Only Connect.
+        Games can include any or all of the four rounds from the show: finding connections,
+        completing a sequence, solving the connecting wall (as seen in the NYT Connections game),
+        or filling in the missing vowels.
+        """
 
     @property
     def cms_enabled(self) -> bool:
@@ -77,7 +81,11 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
 
         missing_vowels = contents.get("missing_vowels")
         if isinstance(missing_vowels, list):
-            episode.missing_vowels = [MissingVowelsGroup(**group) for group in missing_vowels]
+            episode.missing_vowels = [
+                MissingVowelsGroup(**group)
+                for group in missing_vowels
+                if group is not None and group.get("words")
+            ]
 
     @property
     def scoring_mode(self) -> OptionSupport:

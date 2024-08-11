@@ -11,8 +11,8 @@ import logging
 
 from aiohttp import web
 
-from catbox.engine import JSONDict
-from catbox.room import Endpoint, Room, Socket, command
+from catbox.engine import EpisodeState, JSONDict
+from catbox.room import Endpoint, Room, Socket, command, command_no_log
 from catbox.site.state import CatBoxContext
 from catbox.static import DocResponse
 from dom import Document, Element
@@ -43,14 +43,16 @@ class OnlyConnectViewRoom(Room):
 
     @property
     def default_endpoint(self) -> Endpoint:
-        return self.endpoints["edit"]
+        return self.endpoints["view"]
 
     @property
     def starting_endpoint(self) -> Endpoint:
-        return self.endpoints["edit"]
+        return self.endpoints["view"]
 
 
 class OnlyConnectViewEndpoint(Endpoint):
+    room: OnlyConnectViewRoom | OnlyConnectEditRoom
+
     def __init__(self, room: OnlyConnectViewRoom | OnlyConnectEditRoom) -> None:
         super().__init__(room)
 
@@ -58,14 +60,49 @@ class OnlyConnectViewEndpoint(Endpoint):
         return "CMS (Re)View"
 
     async def on_join(self, _: CatBoxContext, __: Request) -> ResponseProtocol:
-        return DocResponse(Document(""))
+        return DocResponse(
+            Document(
+                f'Preview: "{self.room.episode.title}"',
+                Element(
+                    "main",
+                    Element(
+                        "header",
+                        Element("h1", f'"{self.room.episode.title}"'),
+                        class_="left-slant",
+                    ),
+                    Element(
+                        "article",
+                        Element("div", self.room.episode.full_description, class_="usertext"),
+                        class_="panel",
+                    ),
+                    section_to_element(
+                        self.room.episode.connections_round,
+                        "Connections",
+                        "Work out the connection",
+                        "connections",
+                        editable=False,
+                    ),
+                    section_to_element(
+                        self.room.episode.completions_round,
+                        "Completions",
+                        "Complete the sequence (finding the fourth element)",
+                        "completions",
+                        editable=False,
+                    ),
+                    walls_to_element(self.room.episode.connecting_walls, editable=False),
+                    missing_vowels_to_element(self.room.episode.missing_vowels, editable=False),
+                    id="main",
+                ),
+                styles=["/defs.css", "/style.css", f"/{self.room.episode.engine_ident}/edit.css"],
+            ),
+        )
 
 
 class FullEpisodeHelper:
     connections_round: SixQuestions
     completions_round: SixQuestions
     connecting_walls: tuple[ConnectingWall, ConnectingWall]
-    missing_vowels: list[MissingVowelsGroup]
+    missing_vowels: list[MissingVowelsGroup | None]
 
     def __init__(self, episode: OnlyConnectEpisode) -> None:
         self.connections_round = episode.connections_round or SixQuestions.default()
@@ -74,7 +111,10 @@ class FullEpisodeHelper:
             ConnectingWall.default(),
             ConnectingWall.default(),
         )
-        self.missing_vowels = episode.missing_vowels or []
+        if episode.missing_vowels is not None:
+            self.missing_vowels = episode.missing_vowels
+        else:
+            self.missing_vowels = []
 
 
 class OnlyConnectEditRoom(Room):
@@ -124,6 +164,9 @@ class OnlyConnectEditRoom(Room):
         self.save_timer = None
         await self.save_task
         self._engine.save(self.episode)
+
+    def submit(self) -> None:
+        self._engine.save_state(self.episode, EpisodeState.PENDING_REVIEW)
 
     @property
     def default_endpoint(self) -> Endpoint:
@@ -184,6 +227,34 @@ class OnlyConnectEditEndpoint(Endpoint):
                 ),
                 Element(
                     "main",
+                    Element(
+                        "article",
+                        Element("h2", "Game Info"),
+                        Element(
+                            "label",
+                            "Title: ",
+                            Element("input", value=self.room.episode.title, id="title"),
+                            for_="title",
+                        ),
+                        Element(
+                            "label",
+                            "Description:",
+                            Element(
+                                "textarea",
+                                self.room.episode.description,
+                                id="description",
+                                rows="4",
+                            ),
+                            for_="description",
+                        ),
+                        Element(
+                            "button",
+                            "Save + Submit for Review",
+                            id="submit",
+                            class_="button button-large",
+                        ),
+                        class_="panel",
+                    ),
                     section_to_element(
                         self.room.episode.connections_round,
                         "Connections",
@@ -197,13 +268,14 @@ class OnlyConnectEditEndpoint(Endpoint):
                         "completions",
                     ),
                     walls_to_element(self.room.episode.connecting_walls),
+                    missing_vowels_to_element(self.room.episode.missing_vowels),
                     id="main",
                 ),
             ),
             styles=["/defs.css", "/style.css", f"/{self.room.episode.engine_ident}/edit.css"],
             scripts=[f"/{self.room.episode.engine_ident}/edit.js"],
             socket=str(self._endpoint),
-            class_="",
+            class_="connecting",
         )
 
         return DocResponse(doc)
@@ -216,12 +288,23 @@ class OnlyConnectEditEndpoint(Endpoint):
             await self.announce_editing(None, None)
 
     @command
-    async def init(self, _: Socket) -> JSONDict:
+    async def init(self, socket: Socket) -> JSONDict:
+        await self.announce_editing(socket, None)
         return {"cmd": "update", **self.room.episode.json()}
 
     @command
+    async def set_meta(self, _: Socket, title: str, description: str) -> None:
+        self.room.episode.title = title
+        self.room.episode.description = description
+        self.room.queue_save()
+
+    @command
+    async def submit(self, _: Socket) -> None:
+        await self.room.stop()
+        self.room.submit()
+
+    @command_no_log
     async def announce_editing(self, socket: Socket | None, element: str | None) -> None:
-        self._info("User is editing %s", element or "[nothing]", socket=socket)
         if socket is not None:
             self.editing[socket] = element
 
@@ -305,6 +388,11 @@ class OnlyConnectEditEndpoint(Endpoint):
                 if self.room.episode_but_enabled.connecting_walls
                 else None
             )
+        elif section == "missing_vowels":
+            self._update_missing_vowels(socket, question, element, value)
+            self.room.queue_save()
+            await self._fanout({"cmd": "update", **self.room.episode.json()})
+            return
         else:
             self._error(
                 "Attempt to update invalid: section %s/question %s/property %s",
@@ -355,6 +443,63 @@ class OnlyConnectEditEndpoint(Endpoint):
         question.elements[element_number] = value
         return True
 
+    def _update_missing_vowels(  # noqa: PLR0911 complex function
+        self,
+        socket: Socket,
+        question: str,
+        element: str,
+        value: str,
+    ) -> None:
+        groups = self.room.episode_but_enabled.missing_vowels
+
+        if question == "new":
+            groups.append(MissingVowelsGroup("", []))
+            return
+
+        try:
+            group_number = range_number(question, 0, len(groups))
+        except ValueError:
+            self._error(
+                "Attempting to edit out-of-range missing values group %s",
+                question,
+                socket=socket,
+            )
+            return
+
+        group = groups[group_number]
+        if not group:
+            return
+
+        if element == "connection":
+            group.connection = value
+            return
+        if element == "new":
+            group.words.append((value, MissingVowelsGroup.generate_prompt(value)))
+            return
+
+        is_prompt = element.endswith("-prompt")
+
+        try:
+            question_number = range_number(element.removesuffix("-prompt"), 0, len(group.words))
+        except ValueError:
+            self._error(
+                "Attempting to edit invalid element %s in group %s",
+                element,
+                str(group_number),
+                socket=socket,
+            )
+            return
+
+        if not is_prompt and not value:
+            group.words[question_number] = None
+            return
+
+        previous = group.words[question_number] or ("", "")
+        group.words[question_number] = (
+            previous[0] if is_prompt else value,
+            value if is_prompt else previous[1],
+        )
+
 
 def range_number(number: str, v_min: int, v_max: int) -> int:
     element_number = int(number)
@@ -369,7 +514,11 @@ def section_to_element(
     title: str,
     description: str,
     prefix: str,
+    *,
+    editable: bool = True,
 ) -> Element:
+    disabled = "disabled" if not editable else None
+
     return Element(
         "details",
         Element("summary", Element("h2", title)),
@@ -380,14 +529,19 @@ def section_to_element(
                 "legend",
                 Element(
                     "label",
-                    Element("input", type="checkbox", checked="checked" if section else None),
+                    Element(
+                        "input",
+                        type="checkbox",
+                        checked="checked" if section else None,
+                        disabled=disabled,
+                    ),
                     "Enable ",
                     title,
                     " round",
                 ),
             ),
             *(
-                question_to_element(q, prefix + "." + str(i), title + " #" + str(i + 1))
+                question_to_element(q, prefix + "." + str(i), title + " #" + str(i + 1), disabled)
                 for i, q in enumerate(section or [None] * 6)
             ),
             id=prefix,
@@ -398,9 +552,14 @@ def section_to_element(
     )
 
 
-def walls_to_element(_walls: tuple[ConnectingWall, ConnectingWall] | None) -> Element:
+def walls_to_element(
+    _walls: tuple[ConnectingWall, ConnectingWall] | None,
+    *,
+    editable: bool = True,
+) -> Element:
     enabled = _walls is not None
     walls = _walls or ((None, None, None, None), (None, None, None, None))
+    disabled = "disabled" if not editable else None
 
     return Element(
         "details",
@@ -423,7 +582,7 @@ def walls_to_element(_walls: tuple[ConnectingWall, ConnectingWall] | None) -> El
                 "fieldset",
                 Element("h3", "Wall A"),
                 *(
-                    question_to_element(question, f"wall0.{i}", f"Wall A - Group {i}")
+                    question_to_element(question, f"wall0.{i}", f"Wall A - Group {i}", disabled)
                     for i, question in enumerate(walls[0])
                 ),
             ),
@@ -431,7 +590,7 @@ def walls_to_element(_walls: tuple[ConnectingWall, ConnectingWall] | None) -> El
                 "fieldset",
                 Element("h3", "Wall B"),
                 *(
-                    question_to_element(question, f"wall1.{i}", f"Wall B - Group {i+1}")
+                    question_to_element(question, f"wall1.{i}", f"Wall B - Group {i+1}", disabled)
                     for i, question in enumerate(walls[1])
                 ),
             ),
@@ -443,35 +602,60 @@ def walls_to_element(_walls: tuple[ConnectingWall, ConnectingWall] | None) -> El
     )
 
 
-def question_to_element(question: OnlyConnectQuestion | None, prefix: str, title: str) -> Element:
+def question_to_element(
+    question: OnlyConnectQuestion | None,
+    prefix: str,
+    title: str,
+    disabled: str | None,
+) -> Element:
     return Element(
         "fieldset",
         Element("h3", title, class_="conn-title"),
         Element(
             "label",
             Element("span", "Element 1"),
-            Element("input", id=prefix + ".0", value=question.elements[0] if question else ""),
+            Element(
+                "input",
+                id=prefix + ".0",
+                value=question.elements[0] if question else "",
+                disabled=disabled,
+            ),
             for_=prefix + ".0",
             class_="element0",
         ),
         Element(
             "label",
             Element("span", "Element 2"),
-            Element("input", id=prefix + ".1", value=question.elements[1] if question else ""),
+            Element(
+                "input",
+                id=prefix + ".1",
+                value=question.elements[1] if question else "",
+                disabled=disabled,
+            ),
             for_=prefix + ".1",
             class_="element1",
         ),
         Element(
             "label",
             Element("span", "Element 3"),
-            Element("input", id=prefix + ".2", value=question.elements[2] if question else ""),
+            Element(
+                "input",
+                id=prefix + ".2",
+                value=question.elements[2] if question else "",
+                disabled=disabled,
+            ),
             for_=prefix + ".2",
             class_="element2",
         ),
         Element(
             "label",
             Element("span", "Element 4"),
-            Element("input", id=prefix + ".3", value=question.elements[3] if question else ""),
+            Element(
+                "input",
+                id=prefix + ".3",
+                value=question.elements[3] if question else "",
+                disabled=disabled,
+            ),
             for_=prefix + ".3",
             class_="element3",
         ),
@@ -482,6 +666,7 @@ def question_to_element(question: OnlyConnectQuestion | None, prefix: str, title
                 "input",
                 id=prefix + ".connection",
                 value=question.connection if question else "",
+                disabled=disabled,
             ),
             for_=prefix + ".connection",
             class_="connection",
@@ -494,9 +679,113 @@ def question_to_element(question: OnlyConnectQuestion | None, prefix: str, title
                 question.details if question else "",
                 id=prefix + ".details",
                 rows="4",
+                disabled=disabled,
             ),
             for_=prefix + ".details",
             class_="description",
         ),
         class_="panel oc-grid",
+    )
+
+
+def missing_vowels_to_element(
+    missing_vowels: list[MissingVowelsGroup | None] | None,
+    *,
+    editable: bool = True,
+) -> Element:
+    enabled = missing_vowels is not None
+
+    return Element(
+        "details",
+        Element("summary", Element("h2", "Missing Vowels")),
+        Element(
+            "p",
+            "word word words.",
+        ),
+        Element(
+            "fieldset",
+            Element(
+                "legend",
+                Element(
+                    "label",
+                    Element(
+                        "input",
+                        type="checkbox",
+                        checked="checked" if enabled else None,
+                        disabled=None if editable else "disabled",
+                    ),
+                    "Enable Missing Vowels",
+                ),
+            ),
+            *(
+                missing_vowels_group_to_element(group, f"missing_vowels.{idx}", editable=editable)
+                for idx, group in enumerate(missing_vowels or [])
+                if group is not None
+            ),
+            (
+                Element("button", "Add Group", id="missing_vowel_new_group", class_="button")
+                if editable
+                else ""
+            ),
+            id="missing_vowels",
+            disabled="disabled" if not enabled else None,
+        ),
+        class_="panel",
+        open="open",
+    )
+
+
+def missing_vowels_group_to_element(
+    missing_vowels: MissingVowelsGroup,
+    prefix: str,
+    *,
+    editable: bool = True,
+) -> Element:
+    return Element(
+        "fieldset",
+        Element(
+            "label",
+            Element("span", "Connection:"),
+            Element(
+                "input",
+                id=f"{prefix}.connection",
+                value=missing_vowels.connection,
+                disabled=None if editable else "disabled",
+            ),
+            for_=f"{prefix}.connection",
+        ),
+        *(
+            Element(
+                "label",
+                Element(
+                    "input",
+                    id=f"{prefix}.{idx}-prompt",
+                    value=question,
+                    pattern=missing_vowels.regexp(answer),
+                    disabled=None if editable else "disabled",
+                ),
+                Element("span", " ⇒ "),
+                Element(
+                    "input",
+                    id=f"{prefix}.{idx}",
+                    value=answer,
+                    disabled=None if editable else "disabled",
+                ),
+                row=str(idx),
+                for_=f"{prefix}.{idx}",
+            )
+            for idx, answer, question, valid in missing_vowels.pairs
+        ),
+        (
+            Element(
+                "label",
+                "New Entry: ",
+                Element("input", id=f"{prefix}.new.0"),
+                for_=f"{prefix}.new.0",
+                class_="new",
+            )
+            if editable
+            else ""
+        ),
+        id=prefix,
     )

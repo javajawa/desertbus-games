@@ -4,7 +4,11 @@
 
 from __future__ import annotations as _future_annotations
 
+from collections.abc import Iterable
+
 import json
+import random
+import re
 
 from catbox.engine import EpisodeVersion, JSONDict
 
@@ -130,26 +134,56 @@ class ConnectingWall(
         return [section.json() for section in self]
 
 
-class MissingVowelsGroup:
-    connection: str
-    words: list[str]
+VOWELS_AND_SPACES = re.compile(r"[ AEIOU]")
 
-    def __init__(self, connection: str, words: list[str]) -> None:
+
+class MissingVowelsGroup:
+    @staticmethod
+    def valid(prompt: str, answer: str) -> bool:
+        return prompt.upper().replace(" ", "") == VOWELS_AND_SPACES.sub("", answer.upper())
+
+    @staticmethod
+    def generate_prompt(answer: str) -> str:
+        prompt = VOWELS_AND_SPACES.sub("", answer.upper())
+
+        x = 0
+        while (x := x + random.randint(2, 6)) < len(prompt):  # noqa: S311 non-security rand
+            prompt = prompt[:x] + " " + prompt[x:]
+
+        return prompt.strip()
+
+    @staticmethod
+    def regexp(answer: str) -> str:
+        return "^" + " ?".join(VOWELS_AND_SPACES.sub("", answer.upper())) + "$"
+
+    connection: str
+    words: list[tuple[str, str] | None]
+
+    def __init__(self, connection: str, words: list[list[str]]) -> None:
         self.connection = connection
-        self.words = words
+        self.words = [(word[1], word[2]) for word in words]
 
     def json(self) -> JSONDict:
-        return {"connection": self.connection, "words": self.words}  # type: ignore[dict-item]
+        return {
+            "connection": self.connection,
+            "words": list(self.pairs),  # type: ignore[arg-type]
+        }
+
+    @property
+    def pairs(self) -> Iterable[tuple[int, str, str, bool]]:
+        return ((i, x[0], x[1], self.valid(x[1], x[0])) for i, x in enumerate(self.words) if x)
 
 
 class OnlyConnectEpisode(EpisodeVersion):
     connections_round: SixQuestions | None = None
     completions_round: SixQuestions | None = None
     connecting_walls: tuple[ConnectingWall, ConnectingWall] | None = None
-    missing_vowels: list[MissingVowelsGroup] | None = None
+    missing_vowels: list[MissingVowelsGroup | None] | None = None
 
     def json(self) -> JSONDict:
         return {
+            "title": self.title,
+            "description": self.description,
             "connections": (
                 [c.json() for c in self.connections_round] if self.connections_round else None
             ),
@@ -162,7 +196,9 @@ class OnlyConnectEpisode(EpisodeVersion):
                 else None
             ),
             "missing_vowels": (
-                [c.json() for c in self.missing_vowels] if self.missing_vowels else None
+                [c.json() if c else None for c in self.missing_vowels]
+                if self.missing_vowels is not None
+                else None
             ),
         }
 
