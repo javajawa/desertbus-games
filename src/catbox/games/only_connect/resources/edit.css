@@ -51,7 +51,7 @@ label[row]>span {
     display: none;
 }
 
-@media screen and (min-width: 920px) {
+@media screen and (min-width: 940px) {
     .oc-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);

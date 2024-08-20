@@ -69,7 +69,7 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
             completions.extend(
                 [OnlyConnectQuestion.default()] * (QUESTIONS_PER_ROUND - len(completions)),
             )
-            episode.connections_round = SixQuestions(
+            episode.completions_round = SixQuestions(
                 OnlyConnectQuestion(**question) for question in completions
             )
 
