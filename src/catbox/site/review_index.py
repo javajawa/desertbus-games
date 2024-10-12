@@ -29,7 +29,7 @@ async def review_index(engines: Iterable[GameEngine[EpisodeVersion]]) -> Documen
         "CatBox Games - Pending Moderation",
         Element(
             "header",
-            Element("h1", "CatBox Games - Episodes Pending Moderation"),
+            Element("a", Element("h1", "🏠 CatBox Games - Episodes Pending Moderation"), href="/"),
             class_="left-slant",
         ),
         *available,
@@ -98,7 +98,7 @@ def panel(episode: EpisodeVersion, meta: EpisodeMeta | None) -> Element:
 def approved(episode: EpisodeVersion) -> Document:
     return Document(
         "CatBox Games - Approved",
-        Element("header", Element("h2", "CatBox Games - Approved"), class_="left-slant"),
+        Element("header", Element("a", Element("h1", "🏠 CatBox Games - Approved"), href="/"), class_="left-slant"),
         Element(
             "main",
             Element(

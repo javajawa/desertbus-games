@@ -82,6 +82,12 @@ header, main, footer, article, fieldset {
 header, header::after, header::before {
   background: var(--db-orange);
 }
+header a {
+  text-decoration: none;
+}
+article.panel>header {
+  margin: 0 0 0.5rem -1rem;
+}
 dd {
   margin-inline-start: 0;
   margin: 0.1rem 0;
@@ -294,4 +300,13 @@ section.panel {
 #endpoints dl {
   padding: 0;
   margin: 0;
+}
+
+dt.info {
+  margin: 1rem 0 0 0;
+  font-weight: bold;
+}
+
+.single-column-info {
+  max-width: 60rem;
 }

@@ -23,7 +23,7 @@ async def cms_index(engines: Iterable[GameEngine[EpisodeVersion]], user: User) -
 
     return Document(
         title,
-        Element("header", Element("h1", title), class_="left-slant"),
+        Element("header", Element("a", Element("h1", "🏠 ", title), href="/"), class_="left-slant"),
         *[v.html if isinstance(v, Element) else str(v) for v in available],
         styles=["/defs.css", "/style.css"],
     )

@@ -5,7 +5,7 @@ SPDX-License-Identifier: BSD-2-Clause
 -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,13 +15,128 @@ SPDX-License-Identifier: BSD-2-Clause
 </head>
 <body>
     <section class="gl-game-list">
-        <header class="left-slant"><h1>CatBox Games</h1></header>
+        <header class="left-slant"><a href="/"><h1>🏠 CatBox Games</h1></a></header>
         <main class="single-column-info">
-            <article>
+            <article class="panel" id="about">
                 <header class="left-slant"><h3>What is CatBox Games?</h3></header>
                 <p>
-                    It is a custom
+                    CatBox Games is a custom game platform in the vein of
+                    <a href="https://www.jackboxgames.com/" target="_blank">JackBox Games</a>,
+                    aimed for use on <a href="https://desertbus.org/" target="_blank"> Desert Bus for Hope</a>.
                 </p>
+                <dl>
+                    <dt class="info">Available Games</dt>
+                    <dd>
+                        <p>
+                            The system currently supports games of
+                            <a href="#this-or-that">This or That</a> and
+                            <a href="#only-connect">Only Connect</a>.
+                            Jump in to any game "episode", featuring community curated questions.
+                            Games can be played with optional score tracking,
+                            differing numbers of teams, and optional audience support.
+                        </p>
+                    </dd>
+                    <dt class="info">Local, Remote, and Audience Controls</dt>
+                    <dd>
+                        <p>
+                            Each game can be played either with players using their own devices,
+                            or run fully by a Game Manager inputting choices.
+                            Each type of control/view gets its own four-letter room code,
+                            ensuring that streamers and chat don't accidentally end up in the wrong
+                            places.
+                            (Note: "Audience" members will need their own browser device).
+                        </p>
+                        <p>
+                            The Game Manager also has the power to change the sequence of the game,
+                            skipping between rounds in the game, or ending it immediately, in order
+                            to keep the flow of the show moving.
+                        </p>
+                    </dd>
+                    <dt class="info">Content Management System</dt>
+                    <dd>
+                        <p>
+                            Users can log in (with Twitch) and create their own episodes.
+                            Editing an episode reuses the game play systems, giving it support
+                            for collaborative editing between multiple users.
+                        </p>
+                        <p>
+                            Episode information is versioned, with reviewed and published versions
+                            being locked from editing.
+                        </p>
+                    </dd>
+                    <dt class="info">Moderation</dt>
+                    <dd>
+                        <p>
+                            Once a episode is submitted from the CMS, it needs to be approved by a
+                            moderator before being listed on the main site.
+                        </p>
+                        <p>
+                            In addition, the game manager can preview the content of an episode to
+                            check for any specific concerns before playing.
+                        </p>
+                    </dd>
+                </dl>
+            </article>
+        </main>
+        <main class="single-column-info">
+            <article class="panel" id="credits">
+                <header class="left-slant"><h3>Credits</h3></header>
+                <p>
+                    CatBox Games is available as a free and open source project (except the Desert
+                    Bus shift banner image, which is distributed on a specific license).
+                    You can find the source code and all details on
+                    <a href="https://github.com/javajawa/desertbus-games">GitHub</a>.
+                </p>
+
+                <p>CatBox Games is brought to you by:</p>
+                <ul>
+                    <li>Ben aka "Kitteh" <em>(Development)</em></li>
+                    <li>avi_miller <em>(QA + Test Episode Content)</em></li>
+                    <li>Anarchofluffle <em>(QA)</em></li>
+                    <li>ExachixKitsune <em>(QA)</em></li>
+                </ul>
+                <p>We would also like to thank:</p>
+                <ul>
+                    <li>Desert Bus For Hope, for Desert Bus For Hope.</li>
+                    <li>MangledPixel, for digging out the colour palette details.</li>
+                    <li>Tim Lindvall/Graham Stark for the Desert Bus shift banner background.</li>
+                    <li>Julie's Cursed Cord, for being the test player group.</li>
+                </ul>
+            </article>
+        </main>
+        <main class="single-column-info">
+            <article class="panel" id="this-or-that">
+                <header class="left-slant"><h3>This or That</h3></header>
+                <p>
+                    "This or That" is a game with a very simple premise: given two categories,
+                    can the players sort the various clues into them. Starting from the original
+                    "Magic Card or Metal Band", This or That has a...long tradition? Sure.
+                </p>
+                <ul>
+                    <li>Support for one to four teams, or disabling scoring.</li>
+                    <li>Support for audience members to act as an extra team.</li>
+                    <li>Questions consist of a clue and answer information, both of which can be text, and image, or both.</li>
+                    <li>The game system automatically displays possible options, from "this", "that", "both", or "neither", based on all the answers in the episode.</li>
+                    <li>Vote interfaces are available for each team, and the audience, along with a streamable view of the current question, and a DB-compatible score overlay.</li>
+                </ul>
+            </article>
+        </main>
+        <main class="single-column-info">
+            <article class="panel" id="only-connect">
+                <header class="left-slant"><h3>Only Connect</h3></header>
+                <p>
+                    Only Connect is a British game show known for being
+                    "deliciously devious and maddeningly abstract", in which
+                    connections must be made between apparently unconnected
+                    things.
+                </p>
+                <ul>
+                    <li>Support for either one or two teams.</li>
+                    <li>All four rounds (Connections, Sequences, Connecting Wall, and Missing Vowels) are supported but optional.</li>
+                    <li>Note: the connecting wall will be skipped when playing with two teams if there is only one wall.</li>
+                    <li>Questions are text-only (media support planned for DB2025).</li>
+                    <li>Features a heads-up view for the players (which can be used as an input for the connecting wall), and a DB-compatible stream overlay.</li>
+                </ul>
             </article>
         </main>
     </section>
