@@ -4,52 +4,59 @@ SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming
 SPDX-License-Identifier: CC0-1.0
 -->
 
-- Refactor the editor to work on the new socket class.
-- Question you are editing sometimes disappears in the editor
-- Pretty error pages
-- Better navigation (ability to go home)
-- Room code box on home page should make an API to get the room name
-- Login button should be replaced with user name
-- in game view, when only one line of text, make it centered
-- player control buttons don't highlight after disconnect
-- Skip to end button (and show the current question number and total on GM screen)
-- Make branded error pages for all known error states.
-- Should warn when attempting to create a non-moderated table
-  - include a link to the audit page
+
+# General
+
+- [ ] In /play, there should be a warning when attempting to create a non-moderated table
+  - include a link to the audit content page
   - let the user know if a previous version was approved, and offer a link
+- [ ] Make branded error pages for all known error states.
+- [ ] Room code box on home page should make an API to get the room name
+- [ ] Login button should be replaced with username
 
-General
--------
+## Moderation
 
-- [x] Loggers for rooms are not unique and are polluting each others log files
+- [ ] Add a notifications table and code
+- [ ] When rejecting during moderation, require a comment. Put this in the notification
+- [ ] When approving during moderation, send a notification saying it was approved
+- [ ] Add a bug report system that adds notifications to a dedicated bug account
 
+# This or That
 
-Only Connect
-------------
+## Editor
+
+- [ ] Refactor the editor to work on the new socket class.
+- [ ] Question you are editing sometimes disappears in the editor
+
+## Playing
+
+- [ ] Confirmation / lock-in on the controls
+- [ ] Player control buttons don't highlight after disconnect
+- [ ] Skip to end button
+- [ ] show the current question number and total on GM screen)
+- [ ] When only one line of text, make it big and centered
+
+# Only Connect
+
+## Editor
+
+- [ ] Add support for media questions
+
+## Playing - Logic
+
+- [ ] State machine needs actual documentation
+- [ ] Add 2 bonus points for fully completing and guessing the wall
+- [ ] The connecting wall doesn't lock correctly after three strikes
+- [ ] Space key should take sensible default action
+
+## Playing - Graphical
 
 - [ ] End of round screen needs a design pass
 - [ ] The sequences pre-round info is missing
 - [ ] The connecting wall pre-round info is missing
-- [x] When connecting wall is resolved by give up / strike out, cells go green before they go orange
 - [ ] Need to show whose wall it is on the wall view
-- [x] Buttons on the connecting wall -- "Lock in" should be labelled differently, and "steal" action button shuold be clearer
-- [ ] Add 2 bonus points for fully completing and guessing the wall
-- [ ] Space key should take sensible default action
-- [ ] The connecting wall doesn't lock correctly after three strikes
+- [ ] Connecting wall is poorly layed out on the overlay
 
+# Other Games
 
-Ideas?
-- confirmation / lock-in of the controls
-- chat should never win (?)
-
-- Add Jeopardy
-
-Fixed
- - s/master/manager/
- - the answers are backwards
- - some images are being scaled too large. fixed on refresh. (offsetHeight > maxHeight)
- - audit content button link on game index is wrong
- - audience fill goes the wrong way
- - chat final score is shown to too many places
- - add a non-colour marker for selected options
- - player controls -- have some feedback when not in question state (e.g. show what the answer was)
+- [ ] Add Jeopardy
