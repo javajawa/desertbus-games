@@ -202,7 +202,7 @@
     margin-bottom: 1rem;
 }
 #play-area[state="wall"] .not_found {
-    animation: solved ease-in-out 800ms 1;
+    animation: error ease-in-out 800ms 1;
     background: var(--db-orange);
     border-color: var(--db-orange);
     margin-bottom: 1rem;
@@ -235,8 +235,8 @@
     border-color: var(--db-blue);
   }
   to {
-    background: var(--db-orange);
-    border-color: var(--db-orange);
+    background: var(--rdp-green);
+    border-color: var(--rdp-green);
   }
 }
 

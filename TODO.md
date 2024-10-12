@@ -46,15 +46,15 @@ SPDX-License-Identifier: CC0-1.0
 
 - [ ] State machine needs actual documentation
 - [ ] Add 2 bonus points for fully completing and guessing the wall
-- [ ] The connecting wall doesn't lock correctly after three strikes
+- [x] The connecting wall doesn't lock correctly after three strikes
 - [ ] Space key should take sensible default action
 
 ## Playing - Graphical
 
 - [ ] End of round screen needs a design pass
-- [ ] The sequences pre-round info is missing
-- [ ] The connecting wall pre-round info is missing
-- [ ] Need to show whose wall it is on the wall view
+- [x] The sequences pre-round info is missing
+- [x] The connecting wall pre-round info is missing
+- [x] Need to show whose wall it is on the wall view
 - [ ] Connecting wall is poorly layed out on the overlay
 
 # Other Games

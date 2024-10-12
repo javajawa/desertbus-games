@@ -544,7 +544,7 @@ class ActiveWall:
 
                 # Stop accepting input if the board is solved
                 if len(self.ungrouped) == 0:
-                    raise StopIteration
+                    raise OverflowError
 
                 # Indicate that a group was matched
                 break
@@ -554,7 +554,7 @@ class ActiveWall:
                 self.strikes -= 1
                 # Stop accepting input if the team is out of strikes
                 if self.strikes <= 0:
-                    raise StopIteration
+                    raise OverflowError
 
         self.selected = []
         yield None
@@ -730,7 +730,7 @@ class ConnectingWallState(RoundHandler):
 
         try:
             yield from self.active_wall.toggle(word)
-        except StopIteration:
+        except OverflowError:
             yield None
             self.lock_in()
             yield None

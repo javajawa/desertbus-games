@@ -182,22 +182,39 @@ export class OnlyConnectSocket extends SocketController {
      */
     _show_connections(state) {
         if (state.state === "pre-round") {
-            this._set_play_area(
-                state.round,
-                state.state,
-                // FIXME: This currently shows for both Connections and Completions
-                h1("Connections Round", {"class": "no-overlay"}),
-                div(
-                    "Find the connection between 4 things. ",
-                    "The active team can ask to see the next clue at any time, ",
-                    "but can only buzz in to answer once. The host may ask for ",
-                    "more details on an answer or (if incorrect) give the opposing ",
-                    "team a chance to steal. ",
-                    "Correct answers score fewer points for each clue that was revealed. ",
-                    "The opposing team attempting to steal always reveals all clues.",
-                    {"class": "no-overlay"}
-                )
-            );
+            if (state.round === "connections") {
+                this._set_play_area(
+                    state.round,
+                    state.state,
+                    h1("Connections Round", {"class": "no-overlay"}),
+                    div(
+                        "Find the connection between 4 things. ",
+                        "The active team can ask to see the next clue at any time, ",
+                        "but can only buzz in to answer once. The host may ask for ",
+                        "more details on an answer or (if incorrect) give the opposing ",
+                        "team a chance to steal. ",
+                        "Correct answers score fewer points for each clue that was revealed. ",
+                        "The opposing team attempting to steal always reveals all clues.",
+                        {"class": "no-overlay"}
+                    )
+                );
+            } else {
+                this._set_play_area(
+                    state.round,
+                    state.state,
+                    h1("Sequences Round", {"class": "no-overlay"}),
+                    div(
+                        "Find the fourth in the sequence, just based on the elements. ",
+                        "The active team can ask to see the next clue at any time, ",
+                        "but can only buzz in to answer once. The host may ask for ",
+                        "more details on an answer or (if incorrect) give the opposing ",
+                        "team a chance to steal. ",
+                        "Correct answers score fewer points for each clue that was revealed. ",
+                        "The opposing team attempting to steal always reveals all clues.",
+                        {"class": "no-overlay"}
+                    )
+                );
+            }
             return;
         }
 
@@ -302,6 +319,16 @@ export class OnlyConnectSocket extends SocketController {
                 state.round,
                 state.state,
                 h1("Connecting Wall", {"class": "no-overlay"}),
+                div(
+                    "The connecting wall contains four groups of four connected ",
+                    "clues. The first hurdle is finding the groups. You can guess as ",
+                    "many times as you want for the first two groups, but you only get ",
+                    "three attempts on the final groups. (Note: you can give up at any ",
+                    "time). Once the wall is revealed, you get one point for each group ",
+                    "you found, and one point for each you can identify the connection for. ",
+                    "(NOTE: the 2 bonus points for a clean sweep is *not* implemented). ",
+                    "There is no stealing in this round.",
+                )
             );
             return;
         }
@@ -340,6 +367,7 @@ export class OnlyConnectSocket extends SocketController {
                 }, clue)),
                 div(
                     {"id": "strikes"},
+                    div({"class": "no-overlay"}, state.active_team.name, "'s Board"),
                     div({"class": "strike"}, "⨯"),
                     div({"class": "strike"}, "⨯"),
                     div({"class": "strike"}, "⨯"),
