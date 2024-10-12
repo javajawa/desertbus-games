@@ -4,15 +4,15 @@
 
 from __future__ import annotations as _future_annotations
 
-from typing import TypeAlias
+from collections.abc import MutableMapping, MutableSequence
+from typing import TypeAlias, Union
 
 from .engine import GameEngine, OptionSupport
 from .episode import EpisodeMeta, EpisodeState, EpisodeVersion
 
-JSON: TypeAlias = (  # pylint: disable=invalid-name
-    None | int | str | bool | float | list["JSON"] | dict[str, "JSON"]
-)
-JSONDict: TypeAlias = dict[str, "JSON"]
+JSON: TypeAlias = Union[None, int, str, bool, float, "JSONDict", "JSONList", list[str]]
+JSONList: TypeAlias = MutableSequence[JSON]
+JSONDict: TypeAlias = MutableMapping[str, JSON]
 
 
 __all__ = [

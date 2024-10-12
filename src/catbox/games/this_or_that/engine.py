@@ -25,7 +25,7 @@ class ThisOrThatEpisode(EpisodeVersion):
         return {
             "this": self.this_category,
             "that": self.that_category,
-            "questions": [q.json() for q in self.questions],
+            "questions": [q.json() for q in self.questions],  # type: ignore[dict-item]
         }
 
     @property

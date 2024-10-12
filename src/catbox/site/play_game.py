@@ -102,11 +102,22 @@ def _audience_box(engine: GameEngine[EpisodeVersion]) -> Node:
     )
 
 
-async def process_options(request: Request) -> RoomOptions:
+async def process_options(engine: GameEngine[EpisodeVersion], request: Request) -> RoomOptions:
     post_data = await request.post()
 
-    scoring = post_data.get("scoring", None) == "on"
-    audience = post_data.get("audience", None) == "on"
+    if engine.scoring_mode == OptionSupport.REQUIRED:
+        scoring = True
+    elif engine.scoring_mode == OptionSupport.NOT_SUPPORTED:
+        scoring = False
+    else:
+        scoring = post_data.get("scoring", None) == "on"
+
+    if engine.supports_audience == OptionSupport.REQUIRED:
+        audience = True
+    elif engine.supports_audience == OptionSupport.NOT_SUPPORTED:
+        audience = False
+    else:
+        audience = post_data.get("audience", None) == "on"
 
     if scoring:
         raw_teams = post_data.getall("team", [])

@@ -5,6 +5,7 @@
 from __future__ import annotations as _future_annotations
 
 from collections.abc import Iterable
+from typing import Literal
 
 import json
 import random
@@ -53,6 +54,14 @@ class OnlyConnectQuestion:
             "elements": list(self.elements),
         }
 
+    @property
+    def valid(self) -> bool:
+        return (
+            bool(self.connection)
+            and (len(self.elements) == SLOTS_PER_CONNECTION)
+            and all(self.elements)
+        )
+
     def __repr__(self) -> str:
         return f"<OnlyConnectQuestion({self.connection}, {self.elements})>"
 
@@ -92,6 +101,10 @@ class SixQuestions(
             for _ in range(QUESTIONS_PER_ROUND)
         )
 
+    @property
+    def valid(self) -> bool:
+        return all(question.valid for question in self)
+
 
 class ConnectingWall(
     tuple[
@@ -128,7 +141,11 @@ class ConnectingWall(
 
     @property
     def clues(self) -> tuple[str, ...]:
-        return tuple(sum((group.elements for group in self), ()))
+        return tuple(sum((group.elements for group in self), []))  # noqa: RUF017 -- n^2 is fine...
+
+    @property
+    def valid(self) -> bool:
+        return all(group.valid for group in self)
 
     def json(self) -> list[JSONDict]:
         return [section.json() for section in self]
@@ -139,7 +156,7 @@ VOWELS_AND_SPACES = re.compile(r"[ AEIOU]")
 
 class MissingVowelsGroup:
     @staticmethod
-    def valid(prompt: str, answer: str) -> bool:
+    def check_valid(prompt: str, answer: str) -> bool:
         return prompt.upper().replace(" ", "") == VOWELS_AND_SPACES.sub("", answer.upper())
 
     @staticmethod
@@ -166,12 +183,22 @@ class MissingVowelsGroup:
     def json(self) -> JSONDict:
         return {
             "connection": self.connection,
-            "words": list(self.pairs),  # type: ignore[arg-type]
+            "words": list(self.pairs),  # type: ignore[dict-item]
         }
 
     @property
+    def valid(self) -> bool:
+        return any(self.check_valid(x[1], x[0]) for x in self.words if x)
+
+    @property
     def pairs(self) -> Iterable[tuple[int, str, str, bool]]:
-        return ((i, x[0], x[1], self.valid(x[1], x[0])) for i, x in enumerate(self.words) if x)
+        return (
+            (i, x[0], x[1], self.check_valid(x[1], x[0])) for i, x in enumerate(self.words) if x
+        )
+
+    @property
+    def valid_pairs(self) -> Iterable[tuple[str, str]]:
+        return (x for x in self.words if x and self.check_valid(x[1], x[0]))
 
 
 class OnlyConnectEpisode(EpisodeVersion):
@@ -184,18 +211,16 @@ class OnlyConnectEpisode(EpisodeVersion):
         return {
             "title": self.title,
             "description": self.description,
-            "connections": (
+            "connections": (  # type: ignore[dict-item]
                 [c.json() for c in self.connections_round] if self.connections_round else None
             ),
-            "completions": (
+            "completions": (  # type: ignore[dict-item]
                 [c.json() for c in self.completions_round] if self.completions_round else None
             ),
-            "connecting_walls": (
-                [c.json() for c in self.connecting_walls]  # type: ignore[misc]
-                if self.connecting_walls
-                else None
+            "connecting_walls": (  # type: ignore[dict-item]
+                [c.json() for c in self.connecting_walls] if self.connecting_walls else None
             ),
-            "missing_vowels": (
+            "missing_vowels": (  # type: ignore[dict-item]
                 [c.json() if c else None for c in self.missing_vowels]
                 if self.missing_vowels is not None
                 else None
@@ -205,3 +230,21 @@ class OnlyConnectEpisode(EpisodeVersion):
     @property
     def serialise(self) -> str:
         return json.dumps(self.json())
+
+    @property
+    def has_connections_round(self) -> bool:
+        return self.connections_round is not None and self.connections_round.valid
+
+    @property
+    def has_completions_round(self) -> bool:
+        return self.completions_round is not None and self.completions_round.valid
+
+    @property
+    def has_missing_vowels(self) -> bool:
+        return self.missing_vowels is not None and any(x and x.valid for x in self.missing_vowels)
+
+    def has_connecting_walls(self, teams: Literal[1, 2]) -> bool:
+        if not self.connecting_walls or not self.connecting_walls[0].valid:
+            return False
+
+        return (teams == 1) or self.connecting_walls[1].valid

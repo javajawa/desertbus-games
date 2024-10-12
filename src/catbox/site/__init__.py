@@ -58,6 +58,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         routes.add("/edit/*", CatBoxRoute(self.edit_episode))
         routes.add("/view/*", CatBoxRoute(self.view_episode))
         routes.add("/approve/*", CatBoxRoute(self.approve_episode))
+        routes.add("/reject/*", CatBoxRoute(self.reject_episode))
         routes.add("/discard/*", CatBoxRoute(self.discard_episode))
         routes.add("/room/*", CatBoxRoute(self.join))
         routes.add("/join", CatBoxRoute(self.join_by_query))
@@ -167,7 +168,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
             return setup_page(*data)
 
         engine, episode = data
-        room = engine.play_episode(episode, await process_options(request))
+        room = engine.play_episode(episode, await process_options(engine, request))
         self._app_context.add_room(room)
 
         return HTTPFound(f"/room/{room.starting_endpoint.room_code}")
@@ -234,6 +235,19 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
 
         return DocResponse(approved(episode))
 
+    async def reject_episode(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
+        data = self._get_owned_episode(ctx, request, require_moderator=True)
+
+        if not isinstance(data, tuple):
+            return data
+
+        engine, episode = data
+
+        if episode.state == EpisodeState.PENDING_REVIEW:
+            engine.save_state(episode, EpisodeState.DRAFT)
+
+        return HTTPFound(location="/review")
+
     async def discard_episode(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         data = self._get_owned_episode(ctx, request, require_owner=True)
 
@@ -293,6 +307,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         if not (endpoint := self._app_context.active_endpoints.get(room_code)):
             return HTTPNotFound()
 
+        endpoint.room.ping()
         return await endpoint.on_join(ctx, request)
 
     async def join_by_query(self, _: CatBoxContext, request: Request) -> ResponseProtocol:

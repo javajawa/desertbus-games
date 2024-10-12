@@ -16,6 +16,15 @@ from dom import Document, Element
 async def review_index(engines: Iterable[GameEngine[EpisodeVersion]]) -> Document:
     available = await asyncio.gather(*(engine_index(engine) for engine in engines))
 
+    if not any(bool(block) for block in available):
+        available = [
+            Element(
+                "section",
+                Element("main", "Nothing pending review"),
+                class_="gl-game-list",
+            ),
+        ]
+
     return Document(
         "CatBox Games - Pending Moderation",
         Element(
@@ -75,6 +84,12 @@ def panel(episode: EpisodeVersion, meta: EpisodeMeta | None) -> Element:
                 class_="button",
                 href=f"/approve/{episode.engine_ident}/{episode.id}/{episode.version}",
             ),
+            Element(
+                "a",
+                "Reject",
+                class_="button",
+                href=f"/reject/{episode.engine_ident}/{episode.id}/{episode.version}",
+            ),
         ),
         class_="panel gl-game-panel",
     )
@@ -91,11 +106,12 @@ def approved(episode: EpisodeVersion) -> Document:
                 Element("p", f"Version {episode.version} of {episode.title} has been approved!"),
                 Element(
                     "p",
-                    Element("a", "Back to Review", href="/review"),
+                    Element("a", "Back to Review", href="/review", class_="button"),
                     Element(
                         "a",
                         "Play Now",
                         href=f"/play/{episode.engine_ident}/{episode.id}/{episode.version}",
+                        class_="button",
                     ),
                 ),
             ),

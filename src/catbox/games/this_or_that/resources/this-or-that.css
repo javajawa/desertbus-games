@@ -112,9 +112,6 @@ body.fullscreen #scores>div {
     left: 0;
 }
 
-body.score-overlay {
-    background: #ff00ff none;
-}
 .score-overlay #score-audience::after {
     background: var(--db-blue-accent);
 }

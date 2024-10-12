@@ -1,0 +1,393 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Benedict Harcourt <ben.harcourt@harcourtprogramming.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+.gi-author {
+    font-style: italic;
+}
+
+.big-screen {
+    display: grid;
+    grid-template-rows: 5rem 1fr;
+    align-content: center;
+    min-height: 100vh;
+}
+
+.big-screen #scores {
+    text-align: center;
+    font-size: 1.3rem;
+}
+.scorebox {
+    display: inline-block;
+    margin: 0.3rem 1rem;
+}
+.scorebox>div {
+    display: inline-block;
+}
+.scorebox>.score {
+    margin: 0 0 0 0.5rem;
+}
+
+#play-area.fill[round="pre-game"] {
+    display: grid;
+    text-align: center;
+    align-content: center;
+}
+
+#play-area.fill[round="pre-game"] .gi-description {
+    margin: 1.2rem;
+}
+#play-area.fill[state="pre-round"] {
+    padding: 2rem;
+    align-content: center;
+}
+#play-area.fill[state="pre-round"]>div {
+    max-width: 40rem;
+    margin: 0.5rem auto;
+}
+#play-area.fill[state="pre-round"]>h1 {
+    text-align: center;
+}
+
+
+/* Question Selection */
+#play-area.fill[state="select"] {
+    display: grid;
+    grid-template-rows: 3rem repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 1rem 2rem;
+    padding: 0 2rem 1rem;
+}
+#play-area.fill[round="connecting_walls"][state="select"] {
+    grid-template-rows: 3rem 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 1rem 2rem;
+    padding: 0 2rem 4rem;
+}
+#play-area.fill[state="select"]>*:first-child {
+    grid-area: 1 / 1 / 2 / 4;
+    text-align: center;
+}
+#play-area[state="select"]>.button {
+    font-size: 48pt;
+    font-weight: bold;
+    display: grid;
+    align-content: center;
+    width: 100%;
+    color: var(--db-blue);
+}
+#play-area.fill[round="connecting_walls"][state="select"] .button {
+    max-width: 20rem;
+    max-height: 14rem;
+}
+
+/* Question Guessing */
+#play-area.fill[state="question"] {
+    display: grid;
+    grid-template-rows: 1rem repeat(2, 1fr) 3.4rem 5rem;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+#play-area.fill[state="question"]>*:first-child {
+    grid-area: 1 / 1 / 2 / 3;
+    text-align: center;
+}
+
+#play-area.fill .question-clue {
+    display: grid;
+    grid-template-rows: 2rem 1fr;
+    grid-template-columns: 1fr;
+}
+
+#play-area .progress-bar {
+    background: var(--db-blue);
+    color: var(--db-light-blue);
+    margin: 5px 2rem;
+    border-radius: 0.3rem;
+    padding: 0 5px;
+    text-align: center;
+    align-content: center;
+    transition: 0.4s ease-in-out;
+    transform-origin: bottom;
+}
+
+#play-area .clue {
+    grid-area: 2 / 1 / 3 / 2;
+    margin: 5px 2rem;
+    border-radius: 0.3rem;
+    padding: 5px;
+    text-align: center;
+    background: var(--db-light-blue);
+    color: var(--db-blue);
+    display: grid;
+    align-content: center;
+    font-size: 200%;
+    transition: 0.25s ease-in-out;
+    transform-origin: left;
+}
+
+#play-area .connection[data-hidden] {
+  transform: rotateX(-90deg);
+}
+
+#play-area .connection {
+    transition: 0.25s ease-in-out;
+    transform-origin: bottom;
+}
+
+#play-area .clue[data-hidden] {
+  transform: rotateY(-90deg);
+}
+
+#play-area .progress-bar[data-hidden] {
+  transform: rotateX(-90deg);
+}
+
+#play-area .connection, #play-area .question-text, #play-area .answer {
+    margin: 5px 2rem;
+    border-radius: 0.3rem;
+    padding: 5px;
+    text-align: center;
+    color: var(--db-light-blue);
+    background: var(--db-blue);
+    display: grid;
+    align-content: center;
+    font-size: 200%;
+}
+#play-area[state="question"] .connection {
+    grid-area: 4 / 1 / 5 / 3;
+}
+#play-area[state="question"] .details {
+    grid-area: 5 / 1 / 6 / 3;
+}
+
+#play-area.fill[state="vowels"] {
+    display: grid;
+    grid-template-rows: 1fr repeat(3, 3rem) 1fr;
+    align-items: center;
+    height: 100%;
+    grid-row-gap: 1rem;
+}
+
+#play-area.fill .question-text, #play-area.fill .answer {
+    background: var(--db-light-blue);
+    color: var(--db-blue);
+}
+
+#play-area[state="wall"] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr) 5rem;
+    transition: 0.3s ease-in;
+}
+
+#play-area[state="wall"] .button {
+    display: grid;
+    align-content: center;
+    transition: 0.3s ease-in all;
+    grid-area: auto;
+    border-color: var(--db-blue-accent);
+    background: var(--db-blue);
+}
+#play-area[state="wall"] .selected {
+    background: var(--db-light-blue);
+    border-color: var(--db-light-blue);
+}
+#play-area[state="wall"] .grouped {
+    animation: solved ease-in-out 800ms 1;
+    background: var(--rdp-green);
+    border-color: var(--rdp-green);
+    margin-bottom: 1rem;
+}
+#play-area[state="wall"] .not_found {
+    animation: solved ease-in-out 800ms 1;
+    background: var(--db-orange);
+    border-color: var(--db-orange);
+    margin-bottom: 1rem;
+}
+#play-area[state="wall"] .error {
+    animation: error ease-in-out 800ms 1;
+}
+#play-area[state="wall"] .guessing {
+    box-shadow: 0 0 10px 10px var(--db-light-blue);
+}
+
+@keyframes error {
+  from {
+    background: var(--db-light-blue);
+    border-color: var(--db-light-blue);
+  }
+  50% {
+    background: var(--db-orange);
+    border-color: var(--db-orange);
+  }
+  to {
+    background: var(--db-blue);
+    border-color: var(--db-blue);
+  }
+}
+
+@keyframes solved {
+  from {
+    background: var(--db-blue);
+    border-color: var(--db-blue);
+  }
+  to {
+    background: var(--db-orange);
+    border-color: var(--db-orange);
+  }
+}
+
+/* Special button only in this round */
+#game-actions #wall-reveal.button {display: none;}
+#game-actions[round="connecting_walls"] #wall-reveal {display: initial;}
+#game-actions[round="connecting_walls"] [data-action="REVEAL_FOR_STEAL"] {display: none}
+#game-actions[round="connecting_walls"] [data-action="LOCK_IN"] {font-size: 0}
+#game-actions[round="connecting_walls"] [data-action="LOCK_IN"]::before {font-size: 14pt; content: "Give Up"}
+
+#play-area[state="wall"] #strikes {
+    grid-area: 5 / 1 / 6 / 5;
+    text-align: center;
+    align-content: center;
+}
+#play-area[state="wall"] .strike {
+    display: inline-grid;
+    align-content: center;
+    border: 4px solid var(--db-light-blue);
+    color: var(--db-light-blue);
+    border-radius: 0.3rem;
+    padding: 0;
+    margin: 0 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.8rem;
+}
+#play-area[state="wall"] .strike.used {
+    border: 4px solid var(--db-orange);
+    color: var(--db-orange);
+}
+#play-area[state="wall"] #group_details {
+    display: none;
+}
+#play-area[state="wall"] #group_info {
+    display: none;
+    font-size: 2rem;
+    margin: 0 0.5rem;
+    text-align: center;
+    background: var(--db-blue);
+    border: 2px outset var(--db-blue);
+    color: var(--db-light-blue);
+    border-radius: 1rem;
+}
+
+
+#game-actions {
+    display: grid;
+    grid-template-columns: 5rem repeat(3, 1fr);
+}
+
+#game-actions .button {
+    display: block;
+}
+
+.button:disabled, .button.button-disabled {
+    filter: opacity(20%);
+    cursor: initial;
+}
+
+#scores.overlay {
+    position: fixed;
+    left: 1024px;
+    top: 16px;
+    margin: 0;
+    padding: 5px 0;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+}
+#scores.overlay .scorebox {
+    display: inline-grid;
+    grid-template-rows: 1fr 2fr;
+    width: 4rem;
+}
+#scores.overlay {
+    font-size: 12pt;
+}
+#scores.overlay .score {
+    font-size: 24pt;
+    margin: 0;
+}
+
+body.chroma-keyed {
+    display: grid;
+    min-height: 1080px;
+    min-width: 1920px;
+    margin: 0;
+    padding: 0;
+    grid-template-rows: 1fr 210px;
+    align-items: end;
+    text-align: center;
+}
+#play-area.overlay {margin: 0 auto;}
+#play-area.overlay .no-overlay {display: none;}
+
+#play-area.overlay[state="select"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+#play-area.overlay[round="connecting_walls"][state="select"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+#play-area.overlay[state="select"] .button.button-large {
+    width: 9rem;
+    margin: 0.6rem;
+}
+#play-area.overlay[state="select"] .button.button-disabled {
+    visibility: hidden;
+}
+#play-area.overlay[state="question"], #play-area.overlay[state="wall"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    min-width: 1440px;
+    max-width: 1440px;
+    font-weight: 600;
+    font-size: 12pt;
+}
+#play-area.overlay[state="question"] {
+    margin-bottom: 3rem;
+}
+#play-area.overlay[state="question"] .clue {
+    height: 8rem;
+    padding: 0 0.5rem;
+    margin: 0 0.5rem;
+    border: 1px solid var(--db-blue-accent);
+}
+#play-area.overlay[state="question"] .progress-bar {
+    margin: 0.5rem;
+    padding: 0.3rem;
+}
+#play-area.overlay .connection {
+    grid-column-end: 5;
+    margin: 0.5rem;
+    border: 1px solid var(--db-blue-accent);
+}
+#play-area.overlay[state="wall"] .not_found, #play-area.overlay[state="wall"] .grouped {
+    margin-bottom: 0;
+}
+#play-area.overlay[state="wall"] #strikes {
+    width: 1024px;
+    margin: 0 auto;
+}
+
+#play-area.overlay[round="missing_vowels"] div {
+    width: 1024px;
+    border: 1px solid var(--db-blue-accent);
+    margin: 0.3rem 0;
+    font-weight: 600;
+    font-size: 28pt;
+}

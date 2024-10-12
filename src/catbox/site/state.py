@@ -21,6 +21,7 @@ from aiohttp.web import StreamResponse
 
 from catbox.blob import BlobManager
 from catbox.engine import GameEngine
+from catbox.logger import JsonFormatter
 from catbox.room import Endpoint, Room
 from catbox.user import User, UserManager
 from webapp import AppContext, Handler, Request, RequestContext, ResponseProtocol, Route
@@ -238,7 +239,9 @@ class CatBoxState(AppContext[CatBoxRoute, CatBoxContext]):  # Big data class.
         self.active_endpoints[room_code] = endpoint
 
         handler = logging.FileHandler(f"logs/{room_code}.log", encoding="utf-8")
+        handler.setFormatter(JsonFormatter())  # type: ignore[no-untyped-call]
         handler.setLevel(logging.INFO)
+        room.logger = room.logger.getChild(room_code)
         room.logger.addHandler(handler)
 
         endpoint.on_register(room_code, self.websocket(room_code))

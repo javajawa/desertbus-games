@@ -33,7 +33,7 @@ class GMController extends SocketController {
             zone.removeChild(zone.lastChild);
         }
         zone.appendChild(buttons);
-        zone.appendChild(span({"class": "button", "click": e => confirm("Close the room and disconnect everyone?") && this._send({"cmd": "close"})}, "Close/Shutdown Room"));
+        zone.appendChild(span({"class": "button", "style": "margin-top: 1rem; display: inline-block", "click": e => confirm("Close the room and disconnect everyone?") && this._send({"cmd": "close"})}, "Close/Shutdown Room"));
         this._log("Endpoints updated.");
     }
 }

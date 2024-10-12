@@ -54,7 +54,6 @@ class ThisOrThatPreview(Endpoint):
         return f"ThisOrThat #{self.room.episode.id} Preview"
 
     async def on_join(self, _: CatBoxContext, __: Request) -> ResponseProtocol:
-        self.room.ping()
         episode = self.room.episode
         answers: dict[str, int] = defaultdict(int)
         articles: list[Element] = []

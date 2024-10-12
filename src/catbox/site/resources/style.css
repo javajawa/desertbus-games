@@ -17,6 +17,10 @@ html, body {
   font-variant: proportional-nums;
 }
 
+body.chroma-keyed {
+  background: var(--chroma) none;
+}
+
 body {
   background: url("/background.png"), var(--db-blue);
   color: var(--db-text);

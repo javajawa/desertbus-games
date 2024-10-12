@@ -177,7 +177,6 @@ class OnlyConnectEditRoom(Room):
         return self.endpoints["edit"]
 
     def queue_save(self) -> None:
-        self.ping()
         if not self.save_timer:
             self.save_timer = asyncio.get_running_loop().time() + 3
 
@@ -311,7 +310,7 @@ class OnlyConnectEditEndpoint(Endpoint):
         await self._fanout(
             {
                 "cmd": "editing",
-                "positions": [
+                "positions": [  # type: ignore[dict-item] # JSON typing is hard
                     {
                         "session": socket.socket_id,
                         "username": socket.username,

@@ -276,7 +276,7 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
         base: JSONDict = {
             "cmd": "state_change",
             "state": state,
-            "teams": (
+            "teams": (  # type: ignore[dict-item]
                 [team.full() if full_teams else team.public() for team in self.room.teams]
                 if self.room.teams
                 else None
@@ -313,7 +313,6 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
 
     @command
     async def setup(self, _: Socket) -> JSONDict:
-        self.room.ping()
         return {
             "cmd": "setup",
             "state": self.room.state,
@@ -331,8 +330,6 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
 
     @command
     async def vote(self, socket: Socket, team: str, vote: str) -> JSONDict | None:
-        self.room.ping()
-
         # Ensure this endpoint can vote for this team
         if not isinstance(team, str) or not self._can_vote(team):
             self._error("Rejecting un-authed vote for %s", team, socket=socket)
@@ -387,7 +384,7 @@ class ThisOrThatGameManager(ThisOrThatEndpoint):
     async def endpoints(self, _: Socket) -> JSONDict:
         return {
             "cmd": "endpoints",
-            "endpoints": [
+            "endpoints": [  # type: ignore[dict-item]
                 {"room": endpoint.room_code, "name": str(endpoint)}
                 for endpoint in self.room.endpoints.values()
             ],
@@ -532,7 +529,7 @@ class ThisOrThatScoreOverlay(ThisOrThatEndpoint):
                 Element("header", id="scores", class_="left-slant right-slant"),
                 styles=["/defs.css", "/style.css", f"/{episode.engine_ident}/this-or-that.css"],
                 scripts=[f"/{episode.engine_ident}/general.js"],
-                class_="connecting score-overlay",
+                class_="connecting chroma-keyed score-overlay",
                 socket=str(self._endpoint),
                 autoconnect="yes",
             ),
