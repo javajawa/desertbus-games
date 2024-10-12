@@ -27,8 +27,11 @@ body {
   overflow-x: clip;
 }
 
-body.connecting>*, body.closed>* {
+body.connecting>*, body:not(.chroma-keyed).closed>* {
   filter: blur(4px);
+}
+body.chroma-keyed.closed>* {
+  display: none;
 }
 
 body.connecting::after, body.closed::after {

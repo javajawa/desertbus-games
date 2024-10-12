@@ -137,8 +137,8 @@ export class OnlyConnectSocket extends SocketController {
             "pre-game",
             "pre-game",
             div(
-                h1(this.episode.title, {"class": "gi-title no-overlay"}),
-                div(this.episode.author, {"class": "gi-author no-overlay"}),
+                h1(this.episode.title, {"class": "gi-title"}),
+                div(this.episode.author, {"class": "gi-author"}),
                 div(this.episode.description, {"class": "gi-description usertext no-overlay"}),
                 div("Waiting for controller to start game...", {"class": "no-overlay"}),
             ),
@@ -159,7 +159,7 @@ export class OnlyConnectSocket extends SocketController {
                 scores.sort((a, b) => b[0] - a[0]);
                 scoreboard = (current ? "Current leader is " : "The winner is ") + scores[0][1] + "\n\nFinal Scores:\n" + scores.map(([score, team], position) => `${position+1}. ${team} (${score})`).join("\n")
             } else {
-                scoreboard = `${current ? "Current" : "Final"} Score for ${state.teams[0].team}: ${state.teams[0].score}`;
+                scoreboard = `${current ? "Current" : "Final"} Score for ${state.teams[0].name}: ${state.teams[0].score}`;
             }
         }
 
@@ -167,10 +167,10 @@ export class OnlyConnectSocket extends SocketController {
             "post-game",
             "post-game",
             div(
-                h1(this.episode.title, {"class": "gi-title no-overlay"}),
-                div("Contributed by ", this.episode.author, {"class": "gi-author no-overlay"}),
+                h1(this.episode.title, {"class": "gi-title"}),
+                div("Contributed by ", this.episode.author, {"class": "gi-author"}),
                 div(current ? "End of Round": "Thanks for Playing", {"class": "no-overlay"}),
-                div(scoreboard, {"class": "usertext no-overlay"}),
+                div(scoreboard, {"class": "usertext final-score"}),
             )
         );
     }

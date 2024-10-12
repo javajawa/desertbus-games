@@ -371,10 +371,15 @@ body.chroma-keyed {
     margin: 0.5rem;
     padding: 0.3rem;
 }
-#play-area.overlay .connection {
+#play-area.overlay .connection, #play-area.overlay .gi-author, #play-area.overlay .gi-title, #play-area.overlay .final-score  {
     grid-column-end: 5;
     margin: 0.5rem;
-    border: 1px solid var(--db-blue-accent);
+    color: var(--db-light-blue);
+    background: var(--db-blue);
+    padding: 0.2rem 1rem;
+}
+#play-area.overlay .gi-author::before {
+    content: "Submitted by ";
 }
 #play-area.overlay[state="wall"] .not_found, #play-area.overlay[state="wall"] .grouped {
     margin-bottom: 0;
