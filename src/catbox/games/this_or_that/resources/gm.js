@@ -7,6 +7,7 @@ import {elemGenerator, documentFragment} from "/elems.js";
 
 const button = elemGenerator("button");
 const div = elemGenerator("div");
+const span = elemGenerator("span");
 
 class ThisOrThatGM extends ThisOrThatSocket {
     constructor() {
@@ -25,7 +26,12 @@ class ThisOrThatGM extends ThisOrThatSocket {
                 team.name,
                 {"class": "panel", "style": "display: inline-block", "id": "actions-" + team.id},
                 this._make_buttons(v => this._send({"cmd": "vote", "team": team.id, "vote": v}), "button question")
-            ))
+            )),
+            div(
+                {"class": "question answer"},
+                "Question ", span({"id": "question_idx"}, (data.status.question?.idx || 0).toString()), " of ", data.episode.question_count.toString()
+            ),
+            button("End The Game", {"class": "button question answer", "click": () => this._send({"cmd": "skip_to_end"})}),
         ));
         this._show_question(data.status);
     }
@@ -43,6 +49,10 @@ class ThisOrThatGM extends ThisOrThatSocket {
     state_change(state) {
         for (const check of ["pre-game", "question", "answer", "post-game"]) {
             this._actions.classList.toggle(check, state.state === check);
+        }
+        if (state.question) {
+            const elem = document.getElementById("question_idx");
+            if (elem) elem.textContent = state.question.idx;
         }
         super.state_change(state);
     }

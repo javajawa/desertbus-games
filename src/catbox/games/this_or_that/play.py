@@ -193,7 +193,7 @@ class ThisOrThatRoom(Room):
             return
 
         self.question_index += 1
-        if self.question_index == len(self.episode.questions):
+        if self.question_index >= len(self.episode.questions):
             self.state = GameState.POST_GAME
         else:
             self.state = GameState.QUESTION
@@ -289,12 +289,14 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
 
         if question and state == GameState.QUESTION:
             base["question"] = {
+                "idx": self.room.question_index + 1,
                 "headline": "Question #" + str(self.room.question_index + 1),
                 "text": question.question_text,
                 "media": question.question_media.json() if question.question_media else None,
             }
         elif question and state == GameState.ANSWER:
             base["question"] = {
+                "idx": self.room.question_index + 1,
                 "headline": self.room.episode.answer_text(question.answer),
                 "answer": str(question.answer),
                 "text": question.answer_text,
@@ -324,6 +326,7 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
                 "that": self.room.episode.that_category,
                 "has_both": self.room.episode.both_possible,
                 "has_neither": self.room.episode.neither_possible,
+                "question_count": len(self.room.episode)
             },
             "status": self._state_representation(),
         }
@@ -396,6 +399,17 @@ class ThisOrThatGameManager(ThisOrThatEndpoint):
             self._error("Attempting to 'start' in progress game.", socket=socket)
             return {"cmd": "error", "message": "Game already started."}
 
+        await self.room.next_question()
+        return None
+
+    @command
+    async def skip_to_end(self, socket: Socket) -> JSONDict | None:
+        if self.room.state not in {GameState.QUESTION, GameState.ANSWER}:
+            self._error("Attempting to 'skip' a game not in progress.", socket=socket)
+            return {"cmd": "error", "message": "Game not in progress."}
+
+        self.room.state = GameState.ANSWER
+        self.room.question_index = len(self.room.episode) - 1
         await self.room.next_question()
         return None
 

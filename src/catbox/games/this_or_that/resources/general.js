@@ -18,6 +18,7 @@ const button = elemGenerator("button");
  * @property {string} that
  * @property {boolean} has_both
  * @property {boolean} has_neither
+ * @property {number} question_count
  */
 class Episode {
 }
@@ -49,6 +50,7 @@ class TeamStub {}
 class Question {}
 
 /**
+ * @property {number} idx
  * @property {string?} headline
  * @property {string?} answer
  * @property {string?} text
@@ -170,7 +172,6 @@ export class ThisOrThatSocket extends SocketController {
         }
 
         requestAnimationFrame(() => {
-            console.log(this._play_area.offsetHeight, this._play_media.offsetTop);
             const heightAvailable = this._play_area.offsetHeight - this._play_text.offsetTop - this._play_text.offsetHeight - 10;
             const scale = Math.min(heightAvailable / media.height, 4);
 

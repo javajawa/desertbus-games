@@ -30,10 +30,9 @@ SPDX-License-Identifier: CC0-1.0
 
 ## Playing
 
+- [ ] GM games action panel needs a design overhaul
 - [ ] Confirmation / lock-in on the controls
 - [ ] Player control buttons don't highlight after disconnect
-- [ ] Skip to end button
-- [ ] show the current question number and total on GM screen)
 - [ ] When only one line of text, make it big and centered
 
 # Only Connect
@@ -46,15 +45,11 @@ SPDX-License-Identifier: CC0-1.0
 
 - [ ] State machine needs actual documentation
 - [ ] Add 2 bonus points for fully completing and guessing the wall
-- [x] The connecting wall doesn't lock correctly after three strikes
 - [ ] Space key should take sensible default action
 
 ## Playing - Graphical
 
 - [ ] End of round screen needs a design pass
-- [x] The sequences pre-round info is missing
-- [x] The connecting wall pre-round info is missing
-- [x] Need to show whose wall it is on the wall view
 - [ ] Connecting wall is poorly layed out on the overlay
 
 # Other Games

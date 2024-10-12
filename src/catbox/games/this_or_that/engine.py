@@ -40,11 +40,14 @@ class ThisOrThatEpisode(EpisodeVersion):
     def neither_possible(self) -> bool:
         return any(not (q.is_this or q.is_that) for q in self.questions)
 
+    def __len__(self) -> int:
+        return sum(1 for q in self.questions if q.is_valid)
+
     @property
     def full_description(self) -> str:
         both = self.both_possible
         neither = self.neither_possible
-        count = str(len(self.questions))
+        count = str(len(self))
 
         if not (both or neither):
             rules = (
