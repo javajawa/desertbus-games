@@ -98,7 +98,11 @@ def panel(episode: EpisodeVersion, meta: EpisodeMeta | None) -> Element:
 def approved(episode: EpisodeVersion) -> Document:
     return Document(
         "CatBox Games - Approved",
-        Element("header", Element("a", Element("h1", "🏠 CatBox Games - Approved"), href="/"), class_="left-slant"),
+        Element(
+            "header",
+            Element("a", Element("h1", "🏠 CatBox Games - Approved"), href="/"),
+            class_="left-slant",
+        ),
         Element(
             "main",
             Element(

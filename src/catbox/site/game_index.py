@@ -18,7 +18,11 @@ async def game_index(engines: Iterable[GameEngine[EpisodeVersion]]) -> Document:
 
     return Document(
         "CatBox Games",
-        Element("header", Element("a", Element("h1", "🏠 CatBox Games"), href="/"), class_="left-slant"),
+        Element(
+            "header",
+            Element("a", Element("h1", "🏠 CatBox Games"), href="/"),
+            class_="left-slant",
+        ),
         *available,
         styles=["/defs.css", "/style.css"],
     )

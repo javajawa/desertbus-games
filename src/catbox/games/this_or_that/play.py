@@ -326,7 +326,7 @@ class ThisOrThatEndpoint(Endpoint, abc.ABC):
                 "that": self.room.episode.that_category,
                 "has_both": self.room.episode.both_possible,
                 "has_neither": self.room.episode.neither_possible,
-                "question_count": len(self.room.episode)
+                "question_count": len(self.room.episode),
             },
             "status": self._state_representation(),
         }

@@ -10,7 +10,16 @@ from typing import TypeAlias, Union
 from .engine import GameEngine, OptionSupport
 from .episode import EpisodeMeta, EpisodeState, EpisodeVersion
 
-JSON: TypeAlias = Union[None, int, str, bool, float, "JSONDict", "JSONList", list[str]]
+JSON: TypeAlias = Union[  # pylint: disable=invalid-name
+    None,
+    int,
+    str,
+    bool,
+    float,
+    "JSONDict",
+    "JSONList",
+    list[str],
+]
 JSONList: TypeAlias = MutableSequence[JSON]
 JSONDict: TypeAlias = MutableMapping[str, JSON]
 

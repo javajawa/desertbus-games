@@ -79,9 +79,10 @@ multi_line_output = 3
 [tool.flake8]
 
 max-complexity = 8
-max-line-length = 100
+max-line-length = 120
 
 [tool.pylint]
+max-line-length = 120
 disable=[
     # Doc Strings (to be done at some point)
     "missing-module-docstring",
@@ -96,4 +97,6 @@ disable=[
     "unused-argument",
     "protected-access",
     "fixme",
+    # Similar lines ... hard to avoid here sometimes
+    "duplicate-code",
 ]
