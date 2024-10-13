@@ -21,6 +21,11 @@ SPDX-License-Identifier: CC0-1.0
 - [ ] When approving during moderation, send a notification saying it was approved
 - [ ] Add a bug report system that adds notifications to a dedicated bug account
 
+## Infrastructure
+
+- [ ] Set up a VM in the Pacific region
+- [ ] Add basic metrics and tracing support
+
 # This or That
 
 ## Editor
