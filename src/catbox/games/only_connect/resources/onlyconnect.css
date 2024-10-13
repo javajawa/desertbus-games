@@ -126,6 +126,9 @@
     font-size: 200%;
     transition: 0.25s ease-in-out;
     transform-origin: left;
+    background-size: contain;
+    background-position: center center;
+    background-repeat: no-repeat;
 }
 
 #play-area .connection[data-hidden] {

@@ -18,6 +18,7 @@ from .episode import (
     MissingVowelsGroup,
     OnlyConnectEpisode,
     OnlyConnectQuestion,
+    OnlyConnectTextQuestion,
     SixQuestions,
 )
 from .play import OnlyConnectRoom
@@ -76,8 +77,8 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
         walls = contents.get("connecting_walls")
         if isinstance(walls, list):
             episode.connecting_walls = (
-                ConnectingWall(OnlyConnectQuestion(**question) for question in walls[0]),
-                ConnectingWall(OnlyConnectQuestion(**question) for question in walls[1]),
+                ConnectingWall(OnlyConnectTextQuestion(**question) for question in walls[0]),
+                ConnectingWall(OnlyConnectTextQuestion(**question) for question in walls[1]),
             )
 
         missing_vowels = contents.get("missing_vowels")

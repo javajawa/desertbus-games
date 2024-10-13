@@ -4,13 +4,14 @@
 
 from __future__ import annotations as _future_annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import Literal
 
 import json
 import random
 import re
 
+from catbox.blob import Blob
 from catbox.engine import EpisodeVersion, JSONDict
 
 MAX_TEAMS = 2
@@ -28,30 +29,35 @@ class OnlyConnectQuestion:
             "elements": [""] * SLOTS_PER_CONNECTION,
         }
 
+    question_type: str
     connection: str
     details: str
-    elements: list[str]
+    elements: list[str | Blob]
 
     def __init__(
         self,
         question_type: str,
         connection: str,
         details: str,
-        elements: tuple[str, str, str, str],
+        elements: Sequence[str | Blob],
     ) -> None:
-        if question_type != "text":
+        if question_type not in {"text", "media"}:
+            raise ValueError
+        if len(elements) != SLOTS_PER_CONNECTION:
             raise ValueError
 
+        self.question_type = question_type
         self.connection = connection
         self.details = details
         self.elements = list(elements)
 
     def json(self) -> JSONDict:
+        elements = [e.json() if isinstance(e, Blob) else e for e in self.elements]
         return {
-            "question_type": "text",
+            "question_type": self.question_type,
             "connection": self.connection,
             "details": self.details,
-            "elements": list(self.elements),
+            "elements": elements,  # type: ignore[dict-item]
         }
 
     @property
@@ -64,6 +70,22 @@ class OnlyConnectQuestion:
 
     def __repr__(self) -> str:
         return f"<OnlyConnectQuestion({self.connection}, {self.elements})>"
+
+
+class OnlyConnectTextQuestion(OnlyConnectQuestion):
+    elements: list[str]  # type: ignore[assignment]
+
+    def __init__(
+        self,
+        question_type: str,
+        connection: str,
+        details: str,
+        elements: Sequence[str],
+    ) -> None:
+        if question_type != "text":
+            raise ValueError
+
+        super().__init__("text", connection, details, elements)
 
 
 class SixQuestions(
@@ -82,21 +104,16 @@ class SixQuestions(
     def default(cls) -> SixQuestions:
         defaults = OnlyConnectQuestion.default()
 
-        elements = defaults.get("elements", [])
+        elements: list[str] = defaults.get("elements", [])  # type: ignore[assignment]
         if not isinstance(elements, list):
             raise TypeError
 
         return SixQuestions(
             OnlyConnectQuestion(
-                question_type="text",
+                question_type=str(defaults["question_type"]),
                 connection=str(defaults["connection"]),
                 details=str(defaults["details"]),
-                elements=(
-                    str(elements[0]),
-                    str(elements[1]),
-                    str(elements[2]),
-                    str(elements[3]),
-                ),
+                elements=elements,
             )
             for _ in range(QUESTIONS_PER_ROUND)
         )
@@ -108,10 +125,10 @@ class SixQuestions(
 
 class ConnectingWall(
     tuple[
-        OnlyConnectQuestion,
-        OnlyConnectQuestion,
-        OnlyConnectQuestion,
-        OnlyConnectQuestion,
+        OnlyConnectTextQuestion,
+        OnlyConnectTextQuestion,
+        OnlyConnectTextQuestion,
+        OnlyConnectTextQuestion,
     ],
 ):
     @classmethod
@@ -123,16 +140,11 @@ class ConnectingWall(
             raise TypeError
 
         return ConnectingWall(
-            OnlyConnectQuestion(
-                question_type="text",
+            OnlyConnectTextQuestion(
+                question_type=str(defaults["question_type"]),
                 connection=str(defaults["connection"]),
                 details=str(defaults["details"]),
-                elements=(
-                    str(elements[0]),
-                    str(elements[1]),
-                    str(elements[2]),
-                    str(elements[3]),
-                ),
+                elements=elements,
             )
             for _ in range(SLOTS_PER_CONNECTION)
         )

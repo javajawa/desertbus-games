@@ -260,8 +260,12 @@ export class OnlyConnectSocket extends SocketController {
         state.current.elements.map((clue, idx) => {
             const clue_elem = document.getElementById("clue" + idx);
 
-            clue_elem.textContent = clue;
+            clue_elem.textContent = typeof clue === "string" ? clue : " ";
             clue_elem.toggleAttribute("data-hidden", !clue);
+
+            if (typeof clue === "object") {
+                clue_elem.style.backgroundImage = `url(${clue.url})`;
+            }
 
             const bar_elem = document.getElementById("overbar" + idx);
             bar_elem.toggleAttribute("data-hidden", idx+1 !== state.current.revealed);

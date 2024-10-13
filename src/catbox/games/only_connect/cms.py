@@ -11,6 +11,7 @@ import logging
 
 from aiohttp import web
 
+from catbox.blob import Blob
 from catbox.engine import EpisodeState, JSONDict
 from catbox.room import Endpoint, Room, Socket, command, command_no_log
 from catbox.site.state import CatBoxContext
@@ -121,7 +122,7 @@ class OnlyConnectEditRoom(Room):
     episode: OnlyConnectEpisode
     episode_but_enabled: FullEpisodeHelper
 
-    _engine: OnlyConnectEngine
+    engine: OnlyConnectEngine
 
     save_timer: float | None
     save_task: asyncio.Task[None]
@@ -142,7 +143,7 @@ class OnlyConnectEditRoom(Room):
 
         self.save_timer = None
         self.save_task = asyncio.create_task(self._save())
-        self._engine = engine
+        self.engine = engine
 
         # Episode But Enabled is used to remember the state of rounds
         # if someone disabled them, then re-enables them within the same
@@ -163,10 +164,10 @@ class OnlyConnectEditRoom(Room):
         await super().stop()
         self.save_timer = None
         await self.save_task
-        self._engine.save(self.episode)
+        self.engine.save(self.episode)
 
     def submit(self) -> None:
-        self._engine.save_state(self.episode, EpisodeState.PENDING_REVIEW)
+        self.engine.save_state(self.episode, EpisodeState.PENDING_REVIEW)
 
     @property
     def default_endpoint(self) -> Endpoint:
@@ -194,7 +195,7 @@ class OnlyConnectEditRoom(Room):
                     await asyncio.sleep(diff)
 
                 self.logger.info("Saving %s", self)
-                self._engine.save(self.episode)
+                self.engine.save(self.episode)
                 self.save_timer = None
         except asyncio.CancelledError:
             pass
@@ -432,6 +433,9 @@ class OnlyConnectEditEndpoint(Endpoint):
         if element == "details":
             question.details = value
             return True
+        if element == "media":
+            question.question_type = "media" if value else "text"
+            return True
 
         try:
             element_number = range_number(element, 0, 4)
@@ -439,7 +443,13 @@ class OnlyConnectEditEndpoint(Endpoint):
             self._error("Attempting to edit invalid element %s", element, socket=socket)
             return False
 
-        question.elements[element_number] = value
+        if value.startswith("blob::"):
+            blob = self.room.engine.blob_for_id(value.removeprefix("blob::"))
+            if blob:
+                question.elements[element_number] = blob
+        else:
+            question.elements[element_number] = value
+
         return True
 
     def _update_missing_vowels(  # noqa: PLR0911 complex function
@@ -540,7 +550,13 @@ def section_to_element(
                 ),
             ),
             *(
-                question_to_element(q, prefix + "." + str(i), title + " #" + str(i + 1), disabled)
+                question_to_element(
+                    q,
+                    prefix + "." + str(i),
+                    title + " #" + str(i + 1),
+                    disabled,
+                    media_permitted=True,
+                )
                 for i, q in enumerate(section or [None] * 6)
             ),
             id=prefix,
@@ -581,7 +597,7 @@ def walls_to_element(
                 "fieldset",
                 Element("h3", "Wall A"),
                 *(
-                    question_to_element(question, f"wall0.{i}", f"Wall A - Group {i}", disabled)
+                    question_to_element(question, f"wall0.{i}", f"Wall A - Group {i+1}", disabled)
                     for i, question in enumerate(walls[0])
                 ),
             ),
@@ -606,58 +622,30 @@ def question_to_element(
     prefix: str,
     title: str,
     disabled: str | None,
+    *,
+    media_permitted: bool = True,
 ) -> Element:
     return Element(
         "fieldset",
         Element("h3", title, class_="conn-title"),
-        Element(
-            "label",
-            Element("span", "Element 1"),
+        (
             Element(
-                "input",
-                id=prefix + ".0",
-                value=question.elements[0] if question else "",
-                disabled=disabled,
-            ),
-            for_=prefix + ".0",
-            class_="element0",
+                "label",
+                Element(
+                    "input",
+                    id=prefix + ".media",
+                    type="checkbox",
+                    checked="checked" if question and question.question_type == "media" else None,
+                ),
+                "Media question",
+            )
+            if media_permitted
+            else ""
         ),
-        Element(
-            "label",
-            Element("span", "Element 2"),
-            Element(
-                "input",
-                id=prefix + ".1",
-                value=question.elements[1] if question else "",
-                disabled=disabled,
-            ),
-            for_=prefix + ".1",
-            class_="element1",
-        ),
-        Element(
-            "label",
-            Element("span", "Element 3"),
-            Element(
-                "input",
-                id=prefix + ".2",
-                value=question.elements[2] if question else "",
-                disabled=disabled,
-            ),
-            for_=prefix + ".2",
-            class_="element2",
-        ),
-        Element(
-            "label",
-            Element("span", "Element 4"),
-            Element(
-                "input",
-                id=prefix + ".3",
-                value=question.elements[3] if question else "",
-                disabled=disabled,
-            ),
-            for_=prefix + ".3",
-            class_="element3",
-        ),
+        clue_to_element(question, prefix, 0, disabled),
+        clue_to_element(question, prefix, 1, disabled),
+        clue_to_element(question, prefix, 2, disabled),
+        clue_to_element(question, prefix, 3, disabled),
         Element(
             "label",
             Element("span", "Sequence Connection"),
@@ -683,7 +671,46 @@ def question_to_element(
             for_=prefix + ".details",
             class_="description",
         ),
-        class_="panel oc-grid",
+        class_="panel oc-grid type_" + (question.question_type if question else "text"),
+        id=prefix,
+    )
+
+
+def clue_to_element(
+    question: OnlyConnectQuestion | None,
+    prefix: str,
+    idx: int,
+    disabled: str | None,
+) -> Element:
+    clue = question.elements[idx] if question else None
+    clue_text: str = clue if isinstance(clue, str) else ""
+    clue_blob: Blob | None = clue if isinstance(clue, Blob) else None
+
+    return Element(
+        "label",
+        Element("span", "Element ", str(idx + 1)),
+        Element(
+            "input",
+            id=prefix + "." + str(idx),
+            value=clue_text,
+            disabled=disabled,
+            class_="type_text",
+        ),
+        Element(
+            "input",
+            id=prefix + ".m" + str(idx),
+            type="file",
+            disabled=disabled,
+            class_="type_media",
+        ),
+        Element(
+            "img",
+            id=prefix + "." + str(idx) + "-preview",
+            href=clue_blob.url if clue_blob else "",
+            class_="type_media",
+        ),
+        for_=prefix + "." + str(idx),
+        class_="element" + str(idx),
     )
 
 

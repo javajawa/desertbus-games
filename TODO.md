@@ -39,7 +39,7 @@ SPDX-License-Identifier: CC0-1.0
 
 ## Editor
 
-- [ ] Add support for media questions
+- [ ] Ensure that media questions have 4 media clues (and vice versa)
 
 ## Playing - Logic
 

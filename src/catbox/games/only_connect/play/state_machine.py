@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         ConnectingWall,
         MissingVowelsGroup,
         OnlyConnectQuestion,
+        OnlyConnectTextQuestion,
         SixQuestions,
     )
 
@@ -208,15 +209,15 @@ class StandardRoundState(RoundHandler):
             self.current_question.elements,
         ):
             state["current"] = {
-                "question_type": "text",
+                "question_type": self.current_question.question_type,
                 "revealed": len(self.current_question.elements),
-                "elements": [*self.current_question.elements[0 : self.revealed_clues], "?"],
+                "elements": [*self.current_question.elements[0 : self.revealed_clues], "?"],  # type: ignore[dict-item]
             }
         else:
             state["current"] = {
-                "question_type": "text",
+                "question_type": self.current_question.question_type,
                 "revealed": self.revealed_clues,
-                "elements": self.current_question.elements[0 : self.revealed_clues],
+                "elements": self.current_question.elements[0 : self.revealed_clues],  # type: ignore[dict-item]
             }
 
         return state
@@ -235,21 +236,18 @@ class StandardRoundState(RoundHandler):
 
         return state
 
-    def possible_actions(self) -> set[PossibleActions]:  # noqa: PLR0911 -- lots of returns...
-        if self.state in {InRoundState.PRE_ROUND, InRoundState.ANSWER_REVEALED}:
-            return {PossibleActions.NEXT_QUESTION}
+    def possible_actions(self) -> set[PossibleActions]:  # -- lots of returns...
+        mapping: dict[InRoundState, set[PossibleActions]] = {
+            InRoundState.PRE_ROUND: {PossibleActions.NEXT_QUESTION},
+            InRoundState.QUESTION_SELECTION: set(),
+            InRoundState.QUESTION_ACTIVE: {PossibleActions.LOCK_IN, PossibleActions.NEXT_CLUE},
+            InRoundState.STEALING: {PossibleActions.SCORE_STEAL, PossibleActions.SCORE_INCORRECT},
+            InRoundState.ANSWER_REVEALED: {PossibleActions.NEXT_QUESTION},
+            InRoundState.POST_ROUND: {PossibleActions.START_NEXT_ROUND},
+        }
 
-        if self.state == InRoundState.POST_ROUND:
-            return {PossibleActions.START_NEXT_ROUND}
-
-        if self.state == InRoundState.QUESTION_SELECTION:
-            return set()
-
-        if self.state == InRoundState.QUESTION_ACTIVE:
-            return {PossibleActions.LOCK_IN, PossibleActions.NEXT_CLUE}
-
-        if self.state == InRoundState.STEALING:
-            return {PossibleActions.SCORE_STEAL, PossibleActions.SCORE_INCORRECT}
+        if self.state in mapping:
+            return mapping[self.state]
 
         # LOCKED_IN
         if len(self.room.teams) == 1:
@@ -491,7 +489,7 @@ class ActiveWall:
     not_found: list[str]
     selected: list[int]
     strikes: int | None
-    groups: list[OnlyConnectQuestion]
+    groups: list[OnlyConnectTextQuestion]
     confirming_group: int | None
     is_group_revealed: bool
 
@@ -528,8 +526,13 @@ class ActiveWall:
         if len(self.selected) != SLOTS_PER_CONNECTION:
             return
 
-        words = [self.ungrouped[index] for index in self.selected]
+        selected_words = [self.ungrouped[index] for index in self.selected]
+        self._check_match_group(selected_words)
 
+        self.selected = []
+        yield None
+
+    def _check_match_group(self, words: list[str]) -> None:
         for group in self.wall:
             if all(word in group.elements for word in words):
                 # Move the selected entries from 'ungrouped' to 'grouped'
@@ -548,6 +551,7 @@ class ActiveWall:
 
                 # Indicate that a group was matched
                 break
+
         else:  # If no group was matched
             # Remove a strike (if they are being counted)
             if self.strikes is not None:
@@ -555,9 +559,6 @@ class ActiveWall:
                 # Stop accepting input if the team is out of strikes
                 if self.strikes <= 0:
                     raise OverflowError
-
-        self.selected = []
-        yield None
 
     def json(self, *, admin: bool = False) -> JSONDict:
         confirming: JSONDict | None = None
@@ -639,15 +640,15 @@ class ConnectingWallState(RoundHandler):
             "current": self.active_wall.json(admin=True) if self.active_wall else None,
         }
 
-    def possible_actions(self) -> set[PossibleActions]:  # noqa: PLR0911 -- lots of returns...
-        if self.state == InRoundState.POST_ROUND:
-            return {PossibleActions.START_NEXT_ROUND}
+    def possible_actions(self) -> set[PossibleActions]:  # -- lots of returns...
+        mapping: dict[InRoundState, set[PossibleActions]] = {
+            InRoundState.PRE_ROUND: {PossibleActions.NEXT_QUESTION},
+            InRoundState.QUESTION_SELECTION: set(),
+            InRoundState.POST_ROUND: {PossibleActions.START_NEXT_ROUND},
+        }
 
-        if self.state == InRoundState.PRE_ROUND:
-            return {PossibleActions.NEXT_QUESTION}
-
-        if self.state == InRoundState.QUESTION_SELECTION:
-            return set()
+        if self.state in mapping:
+            return mapping[self.state]
 
         # The players playing a wall can give up at any time.
         if self.state != InRoundState.LOCKED_IN and self.active_wall:
