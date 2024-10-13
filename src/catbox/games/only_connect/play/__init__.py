@@ -314,8 +314,11 @@ class OnlyConnectOverlayEndpoint(OnlyConnectEndpoint):
     def __str__(self) -> str:
         return "Only Connect - Overlay"
 
-    async def on_join(self, _: CatBoxContext, __: Request) -> ResponseProtocol:
+    async def on_join(self, _: CatBoxContext, req: Request) -> ResponseProtocol:
         episode = self.room.episode
+
+        if chroma := req.query.get("chroma"):
+            chroma = "--chroma: " + chroma
 
         return DocResponse(
             Document(
@@ -330,6 +333,7 @@ class OnlyConnectOverlayEndpoint(OnlyConnectEndpoint):
                 scripts=[f"/{episode.engine_ident}/onlyconnect.js"],
                 class_="connecting chroma-keyed",
                 socket=str(self._endpoint),
+                style=chroma,
                 autoconnect="autoconnect",
             ),
         )

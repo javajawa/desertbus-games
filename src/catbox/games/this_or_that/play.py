@@ -534,8 +534,11 @@ class ThisOrThatScoreOverlay(ThisOrThatEndpoint):
     def __str__(self) -> str:
         return "Scoreboard overlay"
 
-    async def on_join(self, _: CatBoxContext, __: Request) -> ResponseProtocol:
+    async def on_join(self, _: CatBoxContext, req: Request) -> ResponseProtocol:
         episode = self.room.episode
+
+        if chroma := req.query.get("chroma"):
+            chroma = "--chroma: " + chroma
 
         return DocResponse(
             Document(
@@ -546,6 +549,7 @@ class ThisOrThatScoreOverlay(ThisOrThatEndpoint):
                 class_="connecting chroma-keyed score-overlay",
                 socket=str(self._endpoint),
                 autoconnect="yes",
+                style=chroma,
             ),
         )
 
