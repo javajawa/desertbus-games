@@ -12,6 +12,17 @@ import traceback
 
 from pythonjsonlogger.jsonlogger import JsonFormatter as _JsonFormatter
 
+try:
+    import systemd.journal  # type: ignore[import-not-found]
+
+    JournalHandler = systemd.journal.JournalHandler
+except ImportError:
+
+    class JournalHandler(logging.StreamHandler):  # type: ignore[no-redef,type-arg]
+        def __init__(self, *, SYSLOG_IDENTIFIER: str = "") -> None:  # noqa: ARG002, N803
+            super().__init__()
+
+
 _SysExcInfoType = (
     tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None]
 )
@@ -63,3 +74,6 @@ class JsonFormatter(_JsonFormatter):
                 else None
             ),
         }
+
+
+__all__ = "JsonFormatter", "JournalHandler"

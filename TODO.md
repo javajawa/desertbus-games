@@ -14,6 +14,10 @@ SPDX-License-Identifier: CC0-1.0
 - [ ] Room code box on home page should make an API to get the room name
 - [ ] Login button should be replaced with username
 
+## Editing
+
+- [ ] Have a link to test play an episode that is not yet approved
+
 ## Moderation
 
 - [ ] Add a notifications table and code
@@ -45,6 +49,7 @@ SPDX-License-Identifier: CC0-1.0
 ## Editor
 
 - [ ] Ensure that media questions have 4 media clues (and vice versa)
+- [ ] Add validation feedback to indicate whether a round is complete
 
 ## Playing - Logic
 

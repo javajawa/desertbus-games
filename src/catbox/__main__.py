@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 import catbox.static
 from catbox.games import OnlyConnectEngine, ThisOrThisEngine
-from catbox.logger import JsonFormatter
+from catbox.logger import JournalHandler, JsonFormatter
 from catbox.site import CatBoxApplication, OAuthDetails, PublicEndpoint
 
 
@@ -30,7 +30,7 @@ def main() -> None:
     args = parser.parse_args()
 
     indent = 2 if args.local else None
-    handler = logging.StreamHandler()
+    handler = JournalHandler(SYSLOG_IDENTIFIER="catbox")
     handler.setFormatter(JsonFormatter(json_indent=indent))  # type: ignore[no-untyped-call]
     handler.setLevel(logging.INFO)
     logging.getLogger("catbox").addHandler(handler)

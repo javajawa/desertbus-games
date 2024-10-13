@@ -314,10 +314,10 @@ class OnlyConnectOverlayEndpoint(OnlyConnectEndpoint):
     def __str__(self) -> str:
         return "Only Connect - Overlay"
 
-    async def on_join(self, _: CatBoxContext, req: Request) -> ResponseProtocol:
+    async def on_join(self, _: CatBoxContext, request: Request) -> ResponseProtocol:
         episode = self.room.episode
 
-        if chroma := req.query.get("chroma"):
+        if chroma := request.query.get("chroma", ""):
             chroma = "--chroma: " + chroma
 
         return DocResponse(
