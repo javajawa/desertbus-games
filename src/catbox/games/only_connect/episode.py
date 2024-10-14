@@ -260,3 +260,22 @@ class OnlyConnectEpisode(EpisodeVersion):
             return False
 
         return (teams == 1) or self.connecting_walls[1].valid
+
+    @property
+    def full_description(self) -> str:
+        base = super().full_description
+
+        base += "\n\n"
+
+        if self.has_connections_round:
+            base += "- ✅️ Connections round\n"
+        if self.has_completions_round:
+            base += "- ✅️ Sequences round\n"
+        if self.has_connecting_walls(2):
+            base += "- ✅️ Connecting Walls for 2 teams\n"
+        elif self.has_connecting_walls(1):
+            base += "- ✅ Connecting Walls for ⚠️ 1 team only\n"
+        if self.has_missing_vowels:
+            base += "- ✅️ Missing Vowels\n"
+
+        return base

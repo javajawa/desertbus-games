@@ -56,7 +56,7 @@ body.closed::after {
 }
 
 h1, h2, h3, h4, h5, h6, p, ul {
-  margin: 0.5em 0 0.5em 0;
+  margin: 0.3em 0;
   display: block;
 }
 
@@ -130,7 +130,8 @@ header.right-slant, header.left-slant {
   z-index: 1;
   width: auto;
   max-width: 800px;
-  margin-top: 10px;
+  margin-top: 0.2rem;
+  margin-bottom: 0.5rem;
 }
 header.right-slant {
   padding-left: 0;
@@ -232,7 +233,7 @@ a.button {
 }
 
 .panel {
-  padding: 0 1rem;
+  padding: 0.3rem 1rem;
   margin: 1rem 0;
   color: var(--db-text);
   background: var(--db-blue-accent);
@@ -249,9 +250,6 @@ section.panel {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-
-  padding: 0;
-  margin: 15px 25px;
 }
 .gl-game-panel {
   width: 100%;
@@ -309,4 +307,8 @@ dt.info {
 
 .single-column-info {
   max-width: 60rem;
+}
+
+.warning {
+  font-size: 150%;
 }

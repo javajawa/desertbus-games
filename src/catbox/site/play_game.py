@@ -4,7 +4,7 @@
 
 from __future__ import annotations as _future_annotations
 
-from catbox.engine import EpisodeVersion, GameEngine, OptionSupport
+from catbox.engine import EpisodeVersion, GameEngine, OptionSupport, EpisodeState
 from catbox.room import RoomOptions
 from catbox.static import DocResponse
 from dom import Document, Element, Node, NodeList
@@ -12,6 +12,13 @@ from webapp import Request, ResponseProtocol
 
 
 def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> ResponseProtocol:
+    unapproved = episode.state in {EpisodeState.DRAFT, EpisodeState.PENDING_REVIEW, EpisodeState.DISCARDED}
+
+    approved: str | None = None
+    if unapproved:
+        approved_ver = engine.get_episode_meta(episode.id).version(EpisodeState.PUBLISHED)
+        approved = f"/play/{episode.engine_ident}/{episode.id}/{approved_ver}" if approved_ver else None
+
     return DocResponse(
         Document(
             f"Create Room - {episode.title}",
@@ -19,21 +26,44 @@ def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> R
                 "section",
                 Element(
                     "header",
-                    Element("h1", f"Create Room - {episode.title}"),
+                    Element(
+                        "a",
+                        Element("h1", f"🏠 Create Room - {episode.title}"),
+                        href="/",
+                    ),
                     class_="left-slant",
                 ),
                 Element(
                     "main",
                     Element(
-                        "form",
-                        Element("h2", "Game Options"),
-                        _scoring_box(engine),
-                        _audience_box(engine),
-                        Element("input", type="submit", value="Play", class_="button button-large"),
-                        method="POST",
+                        "article",
+                        "⚠️ WARNING: This episode has not been approved by the moderation team!",
+                        Element(
+                            "div",
+                            "There is an ",
+                            Element("a", "approved version of this episode", href=approved),
+                        ) if approved else "",
+                        class_="panel warning",
+                    ) if unapproved else "",
+                    Element(
+                        "article",
+                        episode.full_description,
+                        class_="panel usertext",
                     ),
-                    class_="panel",
+                    Element(
+                        "article",
+                        Element(
+                            "form",
+                            Element("h2", "Game Options"),
+                            _scoring_box(engine),
+                            _audience_box(engine),
+                            Element("input", type="submit", value="Play", class_="button button-large"),
+                            method="POST",
+                        ),
+                        class_="panel",
+                    ),
                 ),
+                class_="gl-game-list",
             ),
             styles=["/defs.css", "/style.css"],
         ),

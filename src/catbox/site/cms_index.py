@@ -124,6 +124,7 @@ def episode_panel(episode: EpisodeMeta) -> Element:
                 f"Version {reviewing} pending moderator review",
                 version_link("view", episode, reviewing),
                 version_link("edit", episode, reviewing) if not drafting else "",
+                version_link("play", episode, reviewing),
             ),
         )
 
@@ -138,6 +139,7 @@ def episode_panel(episode: EpisodeMeta) -> Element:
                     if reviewing
                     else ""
                 ),
+                version_link("play", episode, drafting),
             ),
         )
     else:
