@@ -135,7 +135,7 @@ class ThisOrThatRoom(Room):
         return self.episode.questions[self.question_index]
 
     def __str__(self) -> str:
-        return str(self.default_endpoint.room_code) + ": " + self.episode.title
+        return self.episode.title
 
     @property
     def default_endpoint(self) -> Endpoint:

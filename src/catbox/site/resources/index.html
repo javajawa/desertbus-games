@@ -14,16 +14,18 @@ SPDX-License-Identifier: BSD-2-Clause
     <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v26/JTUQjIg1_i6t8kCHKm459WxRxC7mw9c.woff2" as="font">
     <link rel="stylesheet" href="/defs.css" crossorigin="anonymous">
     <link rel="stylesheet" href="/style.css" crossorigin="anonymous">
+    <script async type="module" src="/notify.js"></script>
     <title>CatBox Games</title>
 </head>
 <body>
     <section class="gl-game-list">
-        <header class="right-slant hide-on-mobile"><a href="/login">Login with Twitch</a></header>
+        <header class="right-slant hide-on-mobile" id="login"><a href="/login">Login with Twitch</a></header>
         <header class="left-slant"><h1>CatBox Games</h1></header>
         <main>
             <article class="panel gl-game-panel">
                 <form action="/join" method="get">
                     <label for="roomcode"><input type="text" name="room" maxlength="4" id="roomcode" placeholder="Room Code" pattern="[a-zA-Z]{4}" required></label>
+                    <p id="roominfo"></p>
                     <button type="submit" class="button button-large"><h3>Join</h3> a game in progress.</button>
                 </form>
             </article>

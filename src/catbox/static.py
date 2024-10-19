@@ -253,9 +253,11 @@ class ImmutableFileResponse:
 
 class DocResponse:
     _doc: dom.Document
+    _status: int
 
-    def __init__(self, document: dom.Document) -> None:
+    def __init__(self, document: dom.Document, status: int = 200) -> None:
         self._doc = document
+        self._status = status
 
     async def prepare(self, request: aiohttp.web.Request) -> None:
         writer = request.writer
@@ -282,7 +284,7 @@ class DocResponse:
         headers["Content-Length"] = str(len(content))
 
         await writer.write_headers(
-            _http_status_line(request, 200, "Ok"),
+            _http_status_line(request, self._status, ""),
             multidict.CIMultiDict(headers),
         )
         await writer.write_eof(content)

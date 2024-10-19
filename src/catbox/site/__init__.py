@@ -8,20 +8,21 @@ from typing import Any
 
 import asyncio
 import ipaddress
+import json
 import pathlib
 import uuid
 from http import HTTPStatus
 
 import multidict
 import yarl
-from aiohttp.web import (
-    HTTPFound,
-    HTTPInternalServerError,
-    HTTPNotFound,
-    HTTPUnauthorized,
-)
+from aiohttp.web import HTTPFound, Response
 
 from catbox.engine import EpisodeState, EpisodeVersion, GameEngine
+from catbox.site.error_pages import (
+    HTTPInternalServerError,
+    HTTPNotFoundError,
+    HTTPUnauthorizedError,
+)
 from catbox.static import DocResponse, StaticResponse
 from catbox.user import User
 from webapp import Application, Request, RequestContext, ResponseProtocol, RoutingView
@@ -51,6 +52,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         routes = self.default_table()
 
         routes.add("/play/*", CatBoxRoute(self.play_episode))
+        routes.add("/me", CatBoxRoute(self.me))
         routes.add("/review", CatBoxRoute(self.review))
         routes.add("/cms", CatBoxRoute(self.cms))
         routes.add("/login", CatBoxRoute(self.login))
@@ -73,13 +75,21 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         for ident, engine in engines.items():
             add_resources(loop, self._app_context, routes, engine.resources(), ident + "/")
 
+    async def me(self, ctx: CatBoxContext, _: Request) -> ResponseProtocol:
+        user = ctx.user
+
+        return Response(
+            body=json.dumps({"user": user.json() if user else None}),
+            content_type="application/json",
+        )
+
     async def review(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         user = ctx.user
         if not user:
             return send_to_login(request)
 
         if not user or not user.is_mod:
-            return HTTPUnauthorized(body="This page is for moderators only.")
+            return HTTPUnauthorizedError(reason="This page is for moderators only.")
 
         return DocResponse(await review_index(self._app_context.engines.values()))
 
@@ -92,7 +102,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
                 request.query["error_description"],
                 extra={"session": session},
             )
-            return HTTPUnauthorized(body=request.query["error_description"])
+            return HTTPUnauthorizedError(reason=request.query["error_description"])
 
         if "code" in request.query:
             csrf_state = request.query["state"]
@@ -110,10 +120,10 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
                         "expected": session.login_state,
                     },
                 )
-                return HTTPUnauthorized(body="The CSRF token did not match")
+                return HTTPUnauthorizedError(reason="The CSRF token did not match")
 
             if not (user := await self._get_user_from_twitch(request.query["code"])):
-                return HTTPUnauthorized(body="Error getting info from Twitch")
+                return HTTPUnauthorizedError(reason="Error getting info from Twitch")
 
             session.user = user
             return HTTPFound(session.redirect_to or "/")
@@ -151,7 +161,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
 
     async def blob(self, _: CatBoxContext, request: Request) -> ResponseProtocol:
         if not self._app_context.blob_manager:
-            return HTTPInternalServerError(body="Blob manager not initialised")
+            return HTTPInternalServerError(reason="Blob manager not initialised")
 
         return await self._app_context.blob_manager.handle(request)
 
@@ -194,8 +204,8 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         engine = self._app_context.engines[engine_ident]
 
         if not engine or not engine.cms_enabled:
-            return HTTPNotFound(
-                body=f"Engine {engine_ident} does not exist or does not support CMS editing.",
+            return HTTPNotFoundError(
+                reason=f"Engine {engine_ident} does not exist or does not support CMS editing.",
             )
 
         episode = engine.create_episode(ctx.user)
@@ -213,7 +223,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         if episode.state == EpisodeState.PENDING_REVIEW:
             engine.save_state(episode, EpisodeState.DRAFT)
         if episode.state != EpisodeState.DRAFT:
-            return HTTPUnauthorized(body="Can not edit version not in draft")
+            return HTTPUnauthorizedError(reason="Can not edit version not in draft")
 
         room = engine.edit_episode(episode)
         self._app_context.add_room(room)
@@ -229,7 +239,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         engine, episode = data
 
         if episode.state != EpisodeState.PENDING_REVIEW:
-            return HTTPInternalServerError(body="Episode state is not pending review")
+            return HTTPInternalServerError(reason="Episode state is not pending review")
 
         engine.save_state(episode, EpisodeState.PUBLISHED)
 
@@ -280,32 +290,39 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         engine = self._app_context.engines[engine_ident]
 
         if not engine or not engine.cms_enabled:
-            return HTTPNotFound(
-                body=f"Engine {engine_ident} does not exist or does not support CMS editing.",
+            return HTTPNotFoundError(
+                reason=f"Engine {engine_ident} does not exist or does not support CMS editing.",
             )
 
         episode = engine.get_episode_version(int(episode_id), int(version_str))
 
         if not episode:
-            return HTTPNotFound(body="Episode not found")
+            return HTTPNotFoundError(reason="Episode not found")
 
         if require_owner and episode.author_id != ctx.user.user_id:  # type: ignore[union-attr]
-            return HTTPUnauthorized(
-                body=f"You do not own this episode. (Owned by {episode.author})",
+            return HTTPUnauthorizedError(
+                reason=f"You do not own this episode. (Owned by {episode.author})",
             )
 
         if require_moderator and not ctx.user.is_mod:  # type: ignore[union-attr]
-            return HTTPUnauthorized(
-                body="You are not a moderator.",
+            return HTTPUnauthorizedError(
+                reason="You are not a moderator.",
             )
 
         return engine, episode
 
     async def join(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         _, _, room_code = request.path.split("/", 2)
+        endpoint = self._app_context.active_endpoints.get(room_code)
 
-        if not (endpoint := self._app_context.active_endpoints.get(room_code)):
-            return HTTPNotFound()
+        if request.method == "PATCH":
+            return Response(
+                text=str(endpoint.room) + " " + str(endpoint) if endpoint else None,
+                content_type="text/plain",
+            )
+
+        if not endpoint:
+            return HTTPNotFoundError()
 
         endpoint.room.ping()
         return await endpoint.on_join(ctx, request)
@@ -317,7 +334,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         _, _, room_code = request.path.split("/", 2)
 
         if not (endpoint := self._app_context.active_endpoints.get(room_code.upper())):
-            return HTTPNotFound()
+            return HTTPNotFoundError()
 
         return await endpoint(ctx, request)
 
@@ -346,7 +363,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
                 message,
                 extra={"status_code": resp.status},
             )
-            raise HTTPUnauthorized(body=message)
+            raise HTTPUnauthorizedError(reason=message)
 
         token = (await resp.json()).get("access_token")
 
@@ -366,12 +383,12 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
                 message,
                 extra={"status_code": resp.status},
             )
-            raise HTTPUnauthorized(body=message)
+            raise HTTPUnauthorizedError(reason=message)
 
         user_list = (await resp.json()).get("data", [])
 
         if not user_list:
-            raise HTTPUnauthorized(body="No user returned?")
+            raise HTTPUnauthorizedError(reason="No user returned?")
 
         user = user_list[0]
 
@@ -402,7 +419,7 @@ def static(
 
 def not_found() -> CatBoxRoute:
     async def call(_c: RequestContext, _r: Request) -> ResponseProtocol:
-        return HTTPNotFound()
+        return HTTPNotFoundError()
 
     return CatBoxRoute(call)
 

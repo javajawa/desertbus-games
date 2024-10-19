@@ -7,10 +7,6 @@ SPDX-License-Identifier: CC0-1.0
 
 # General
 
-- [ ] Make branded error pages for all known error states.
-- [ ] Room code box on home page should make an API to get the room name
-- [ ] Login button should be replaced with username
-
 ## Moderation
 
 - [ ] Add a Notifications table and code

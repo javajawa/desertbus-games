@@ -17,6 +17,13 @@ class User:
     twitch_id: int
     is_mod: bool
 
+    def json(self) -> dict[str, str | bool]:
+        return {
+            "user_id": str(self.user_id),
+            "user_name": self.user_name,
+            "is_mod": self.is_mod,
+        }
+
 
 class UserManager:
     _db: sqlite3.Connection

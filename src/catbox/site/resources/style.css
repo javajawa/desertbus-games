@@ -208,6 +208,11 @@ a.button {
   text-align: center;
   text-transform: uppercase;
 }
+#roominfo {
+  width: 300px;
+  font-size: 70%;
+  margin: 0 auto;
+}
 #roomcode::placeholder {
   text-transform: initial;
 }
