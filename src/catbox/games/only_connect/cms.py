@@ -452,7 +452,7 @@ class OnlyConnectEditEndpoint(Endpoint):
 
         return True
 
-    def _update_missing_vowels(  # noqa: PLR0911 complex function
+    def _update_missing_vowels(  # noqa: PLR0911  # pylint: disable=R0911
         self,
         socket: Socket,
         question: str,

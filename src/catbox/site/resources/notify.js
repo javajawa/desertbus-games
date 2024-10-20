@@ -14,9 +14,16 @@ function notifications() {
 
         if (!user) return;
 
+        const notif = document.createElement("a");
+        notif.setAttribute("href", "/notifications");
+        notif.classList.add("notification-icon");
+        notif.classList.toggle("no-unread", r.user.unread_notifications === 0);
+        notif.textContent = r.user.unread_notifications.toString();
+
         login.replaceChildren(
             document.createTextNode("Logged in as "),
             document.createTextNode(user.user_name),
+            notif,
         );
     });
 }

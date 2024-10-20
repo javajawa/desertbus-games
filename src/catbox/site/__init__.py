@@ -29,6 +29,7 @@ from webapp import Application, Request, RequestContext, ResponseProtocol, Routi
 
 from .cms_index import cms_index
 from .game_index import game_index
+from .notification_index import notification_page
 from .play_game import process_options, setup_page
 from .review_index import approved, review_index
 from .state import CatBoxContext, CatBoxRoute, CatBoxState, OAuthDetails, PublicEndpoint
@@ -53,6 +54,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
 
         routes.add("/play/*", CatBoxRoute(self.play_episode))
         routes.add("/me", CatBoxRoute(self.me))
+        routes.add("/notifications", CatBoxRoute(self.notifications))
         routes.add("/review", CatBoxRoute(self.review))
         routes.add("/cms", CatBoxRoute(self.cms))
         routes.add("/login", CatBoxRoute(self.login))
@@ -82,6 +84,17 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
             body=json.dumps({"user": user.json() if user else None}),
             content_type="application/json",
         )
+
+    async def notifications(self, ctx: CatBoxContext, req: Request) -> ResponseProtocol:
+        user = ctx.user
+
+        if not user:
+            return send_to_login(req)
+
+        r = DocResponse(notification_page(user, user.notifications()))
+        user.mark_notifications_as_read()
+
+        return r
 
     async def review(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         user = ctx.user
@@ -242,6 +255,9 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
             return HTTPInternalServerError(reason="Episode state is not pending review")
 
         engine.save_state(episode, EpisodeState.PUBLISHED)
+        episode.author_object.send_notification(
+            f"{episode.title} v{episode.version} has been approved!",
+        )
 
         return DocResponse(approved(episode))
 
@@ -255,6 +271,9 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
 
         if episode.state == EpisodeState.PENDING_REVIEW:
             engine.save_state(episode, EpisodeState.DRAFT)
+            episode.author_object.send_notification(
+                f"{episode.title} v{episode.version} has been rejected in moderation :(",
+            )
 
         return HTTPFound(location="/review")
 

@@ -9,9 +9,6 @@ SPDX-License-Identifier: CC0-1.0
 
 ## Moderation
 
-- [ ] Add a Notifications table and code
-- [ ] When rejecting during moderation, require a comment. Put this in the notification
-- [ ] When approving during moderation, send a notification saying it was approved
 - [ ] Add a bug report system that adds notifications to a dedicated bug account
 
 ## Infrastructure

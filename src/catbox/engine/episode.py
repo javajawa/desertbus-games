@@ -69,6 +69,10 @@ class Episode(abc.ABC):
         return self._author.user_name
 
     @property
+    def author_object(self) -> User:
+        return self._author
+
+    @property
     def title(self) -> str:
         return self._title
 

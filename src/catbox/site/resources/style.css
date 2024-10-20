@@ -236,6 +236,19 @@ a.button {
 .usertext {
   white-space: pre-wrap;
 }
+.notification-icon {
+  margin: 0 0 0 0.2rem;
+  border-radius: 1rem;
+  padding: 0.2rem 0.5rem;
+  width: 1rem;
+  background: var(--db-light-blue);
+}
+.notification-icon.no-unread {
+  background: var(--rdp-green);
+}
+.panel.read {
+  background: var(--db-blue);
+}
 
 .panel {
   padding: 0.3rem 1rem;
