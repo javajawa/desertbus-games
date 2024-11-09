@@ -684,7 +684,8 @@ def clue_to_element(
 ) -> Element:
     clue = question.elements[idx] if question else None
     clue_text: str = clue if isinstance(clue, str) else ""
-    clue_blob: Blob | None = clue if isinstance(clue, Blob) else None
+    clue_blob: dict[str, str] | None = clue if isinstance(clue, dict) else None
+    print(clue)
 
     return Element(
         "label",
@@ -706,7 +707,7 @@ def clue_to_element(
         Element(
             "img",
             id=prefix + "." + str(idx) + "-preview",
-            src=clue_blob.url if clue_blob else "",
+            src=clue_blob["url"] if clue_blob else "",
             class_="type_media",
         ),
         for_=prefix + "." + str(idx),
