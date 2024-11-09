@@ -180,9 +180,8 @@ def _audience_box(engine: GameEngine[EpisodeVersion]) -> Node:
             for_="audience",
         ),
         Element(
-            "WARNING: Audience support has not been tested with hundreds/thousands of users. "
-            "It *should* hold up. All shifts except Night Watch you can reach out to 'Kitteh'"
-            "if you want to use this and I will actively monitor and support.",
+            "p",
+            "⚠️ Audience support has not been tested with hundreds/thousands of users. Good Luck?",
         ),
     )
 

@@ -112,12 +112,20 @@ class ThisOrThisEngine(GameEngine[ThisOrThatEpisode]):
         </p>
         <p>
         Players could use the "<code>Team [name] controls</code>"
-        to enter answers on their phone (but no phones on stage, right).
+        to enter answers on their phone (but no phones on stage, right?).
         </p>
         <p>
         If playing with multiple teams, or the audience enabled,
         the "<code>Scoreboard overlay</code>" is a chroma-keyed in green
         and should put the scores in the right place on the screen
+        </p>
+        <p>
+        Playing with the audience:<br>
+        - In the game manager view, there will be a room code for chat to join.<br>
+        - They can either enter that at <code>db.tea-cats.co.uk</code> or
+        go direct to <code>https://db.tea-cats.co.uk/play/[room code]</code>.<br>
+        - You can see how much of the audience has voted by their score box filling up.<br>
+        - Audience score is calculated as an average of all their answers.
         </p>
         """
 

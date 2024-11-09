@@ -94,7 +94,7 @@ class ThisOrThatPreview(Endpoint):
     def article(self, question: ThisOrThatQuestion, index: int, answer: str) -> Element:
         return Element(
             "article",
-            Element("h3", f"Question {index}"),
+            Element("h3", f"Question {index + 1}"),
             (
                 Element("p", question.question_text, class_="usertext")
                 if question.question_text
