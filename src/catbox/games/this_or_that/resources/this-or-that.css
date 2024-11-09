@@ -18,6 +18,9 @@
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 90px;
     grid-row-gap: 0.5rem;
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto;
 }
 body.fullscreen, body.full {
     display: grid;
