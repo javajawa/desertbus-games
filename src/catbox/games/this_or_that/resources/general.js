@@ -97,6 +97,9 @@ export class ThisOrThatSocket extends SocketController {
         this._play_text = document.getElementById("pl-text");
         this._play_media = document.getElementById("pl-media");
         this._play_area = this._headline?.offsetParent || null;
+
+        const canvas = document.createElement("canvas");
+        this._two_d = canvas.getContext("2d");
     }
 
 
@@ -155,8 +158,29 @@ export class ThisOrThatSocket extends SocketController {
         }
 
         if (text) {
+            let multi_line = true;
+            let big = false;
+
+            if (!text.includes("\n")) {
+                const font_family = window.getComputedStyle(this._play_text).getPropertyValue("font-family");
+
+                this._two_d.font = "72px " + font_family;
+                if (this._two_d.measureText(text).width < 0.9 * this._play_text.offsetParent.offsetWidth) {
+                    multi_line = false;
+                    big = true;
+                } else {
+                    const font_size = window.getComputedStyle(this._headline).getPropertyValue("font-size");
+                    this._two_d.font = font_size + " " + font_family;
+                    multi_line = this._two_d.measureText(text).width > 0.9 * this._play_text.offsetParent.offsetWidth;
+                }
+            }
+
             this._play_text.textContent = text;
             this._play_text.style.display = "";
+
+            this._play_text.style.textAlign = !multi_line ? "center" : "";
+            this._play_text.style.marginTop = !multi_line ? "1rem" : "";
+            this._play_text.style.fontSize = big ? "72px" : "";
         } else {
             this._play_text.textContent = "";
             this._play_text.style.display = "none";

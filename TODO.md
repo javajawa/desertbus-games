@@ -27,7 +27,6 @@ SPDX-License-Identifier: CC0-1.0
 
 - [ ] Confirmation / lock-in on the controls
 - [ ] Player control buttons don't highlight after disconnect
-- [ ] When only one line of text, make it big and centered
 
 # Only Connect
 
