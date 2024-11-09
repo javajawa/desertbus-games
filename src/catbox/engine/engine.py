@@ -85,6 +85,11 @@ class GameEngine(abc.ABC, Generic[Episode]):
     def description(self) -> str:
         pass
 
+    @property
+    @abc.abstractmethod
+    def tech_info(self) -> str:
+        pass
+
     def get_episode_meta(self, episode_id: int) -> EpisodeMeta | None:
         self._cursor.execute(
             """SELECT episode_id, user_id, title, description

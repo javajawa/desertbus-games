@@ -47,6 +47,36 @@ class OnlyConnectEngine(GameEngine[OnlyConnectEpisode]):
         """
 
     @property
+    def tech_info(self) -> str:
+        return """
+        <p>
+            Play is intended to be run by a game manager (stage friend or tech person).
+            They will have buttons to proceed through the game, so
+            that person needs a <em>vague</em> understanding of the rules.
+        </p>
+        <p>
+            The game manager page can be opened on other machines to move control around.
+        </p>
+        <p>
+            Two other views are available:
+        </p>
+        <ul>
+            <li>
+                "Overlay" is a chroma keyed overlay designed to fit in the floor space of
+                the main shot (it also includes a score panel up near the clock.
+            </li>
+            <li>
+                "Full Screen" is intended to be shown in the room. It makes everything as
+                big as possible. (can be used as a two-up view if the chroma overlay isn't viable).
+            </li>
+        </ul>
+        <p>
+            If connecting walls are in play (see left), the "Full Screen" view could be sent to
+            the co-pilot PC and used to enter answers.
+        </p>
+        """
+
+    @property
     def cms_enabled(self) -> bool:
         return True
 

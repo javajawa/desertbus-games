@@ -282,6 +282,9 @@ section.panel {
 }
 @media screen and (min-width: 1440px) {
   .gl-game-panel { width: calc(33% - 2px); }
+  .half-panel {
+    max-width: calc(50% - 0.3rem);
+  }
 }
 
 .game-credit {
@@ -311,6 +314,10 @@ section.panel {
 }
 .sync.conflict::after {
   content: "⚠️ Conflict (someone else made a change you would overwrite)";
+}
+
+label:has(.team-name:placeholder-shown) ~ label {
+  filter: grayscale(0.8);
 }
 
 #endpoints dl {

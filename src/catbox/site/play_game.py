@@ -49,7 +49,7 @@ def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> R
                             (
                                 Element(
                                     "div",
-                                    "There is an ",
+                                    "There is an older ",
                                     Element("a", "approved version of this episode", href=approved),
                                 )
                                 if approved
@@ -62,8 +62,25 @@ def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> R
                     ),
                     Element(
                         "article",
+                        Element("header", Element("h3", "Game Info")),
                         episode.full_description,
-                        class_="panel usertext",
+                        Element("hr"),
+                        Element(
+                            "p",
+                            Element(
+                                "a",
+                                "Audit Content",
+                                href=f"/view/{episode.engine_ident}/{episode.id}/{episode.version}",
+                                class_="button",
+                            ),
+                        ),
+                        class_="panel usertext half-panel",
+                    ),
+                    Element(
+                        "article",
+                        Element("header", Element("h3", "Tech Info")),
+                        engine.tech_info,
+                        class_="panel half-panel",
                     ),
                     Element(
                         "article",
@@ -81,6 +98,7 @@ def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> R
                             method="POST",
                         ),
                         class_="panel",
+                        style="margin: 0 auto",
                     ),
                 ),
                 class_="gl-game-list",
@@ -115,12 +133,20 @@ def _scoring_box(engine: GameEngine[EpisodeVersion]) -> Node:
                 ),
             ),
             Element("h3", "Team Names"),
+            Element("p", f"Enter up to {engine.max_teams} team names."),
             *(
                 Element(
                     "label",
                     "Team ",
                     str(i + 1),
-                    Element("input", type="text", id=f"team-{i}", name="team"),
+                    Element(
+                        "input",
+                        type="text",
+                        id=f"team-{i}",
+                        name="team",
+                        class_="team-name",
+                        placeholder=" ",
+                    ),
                     for_=f"team-{i}",
                 )
                 for i in range(engine.max_teams)
@@ -138,7 +164,11 @@ def _scoring_box(engine: GameEngine[EpisodeVersion]) -> Node:
 
 def _audience_box(engine: GameEngine[EpisodeVersion]) -> Node:
     if engine.supports_audience == OptionSupport.NOT_SUPPORTED:
-        return Element("ul", Element("li", "Audience/Chat is not supported."))
+        return Element(
+            "fieldset",
+            Element("legend", "Audience / Chat"),
+            Element("p", "Audience/Chat is not supported."),
+        )
 
     return Element(
         "fieldset",
@@ -148,6 +178,11 @@ def _audience_box(engine: GameEngine[EpisodeVersion]) -> Node:
             Element("input", type_="checkbox", id="audience", name="audience", checked="checked"),
             "Enable Audience/Chat",
             for_="audience",
+        ),
+        Element(
+            "WARNING: Audience support has not been tested with hundreds/thousands of users. "
+            "It *should* hold up. All shifts except Night Watch you can reach out to 'Kitteh'"
+            "if you want to use this and I will actively monitor and support.",
         ),
     )
 

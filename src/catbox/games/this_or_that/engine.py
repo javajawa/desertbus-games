@@ -94,6 +94,34 @@ class ThisOrThisEngine(GameEngine[ThisOrThatEpisode]):
         return "Guess which items belong to one of two known categories"
 
     @property
+    def tech_info(self) -> str:
+        return """
+        <p>
+        Play is intended to be run by a game manager (stage friend or tech person).
+        They will have buttons to proceed between questions, and set answers.
+        That page can be opened on other machines to move control around.
+        </p>
+        <p>
+        You will find the game controls at the bottom, with links to the various views
+        in the bottom left.
+        </p>
+        <p>
+        The "Shared/TV view" is intended to be used as the two-up view for stream,
+        and view for players in the room.
+        Resize that tab to the aspect ratio you desire
+        </p>
+        <p>
+        Players could use the "<code>Team [name] controls</code>"
+        to enter answers on their phone (but no phones on stage, right).
+        </p>
+        <p>
+        If playing with multiple teams, or the audience enabled,
+        the "<code>Scoreboard overlay</code>" is a chroma-keyed in green
+        and should put the scores in the right place on the screen
+        </p>
+        """
+
+    @property
     def cms_enabled(self) -> bool:
         return True
 
