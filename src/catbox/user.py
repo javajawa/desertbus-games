@@ -84,7 +84,7 @@ class UserManager:
         self._cursor.execute("SELECT * FROM User WHERE twitch_id = ?", (twitch_id,))
 
         if row := self._cursor.fetchone():
-            return User(**row)
+            return User(self, **row)
 
         self._cursor.execute(
             "INSERT INTO User (twitch_id, user_name) VALUES (?, ?)",
