@@ -706,7 +706,7 @@ def clue_to_element(
         Element(
             "img",
             id=prefix + "." + str(idx) + "-preview",
-            href=clue_blob.url if clue_blob else "",
+            src=clue_blob.url if clue_blob else "",
             class_="type_media",
         ),
         for_=prefix + "." + str(idx),
