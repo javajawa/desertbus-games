@@ -10,6 +10,8 @@ __pycache__/
 *.egg-info/
 reports/
 .coverage
+/.idea/
+/.workspace
 
 /cert.pem
 /games.db
