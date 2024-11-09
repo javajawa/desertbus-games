@@ -19,19 +19,21 @@ class ThisOrThatGM extends ThisOrThatSocket {
         super.setup(data);
 
         this._actions.appendChild(documentFragment(
-            button("Start The Game", {"class": "button pre-game", "click": () => this._send({"cmd": "start"})}),
-            button("Next Question", {"class": "button answer", "click": () => this._send({"cmd": "next_question"})}),
-            button("Reveal Answer", {"class": "button question", "click": () => this._send({"cmd": "reveal_answer"})}),
+            div(
+                {"class": "question answer"},
+                "Question ", span({"id": "question_idx"}, (data.status.question?.idx || 0).toString()), " of ", data.episode.question_count.toString()
+            ),
+            div(
+                button("Start The Game", {"class": "button pre-game", "click": () => this._send({"cmd": "start"})}),
+                button("Next Question", {"class": "button answer", "click": () => this._send({"cmd": "next_question"})}),
+                button("Reveal Answer", {"class": "button question", "click": () => this._send({"cmd": "reveal_answer"})}),
+                button("End The Game", {"class": "button question answer", "click": () => this._send({"cmd": "skip_to_end"})}),
+            ),
             ...(data.status.teams || []).map(team => div(
                 team.name,
                 {"class": "panel", "style": "display: inline-block", "id": "actions-" + team.id},
                 this._make_buttons(v => this._send({"cmd": "vote", "team": team.id, "vote": v}), "button question")
             )),
-            div(
-                {"class": "question answer"},
-                "Question ", span({"id": "question_idx"}, (data.status.question?.idx || 0).toString()), " of ", data.episode.question_count.toString()
-            ),
-            button("End The Game", {"class": "button question answer", "click": () => this._send({"cmd": "skip_to_end"})}),
         ));
         this._show_question(data.status);
     }
