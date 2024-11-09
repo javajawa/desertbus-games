@@ -315,7 +315,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
 
         episode = engine.get_episode_version(int(episode_id), int(version_str))
 
-        if not episode:
+        if episode is None:
             return HTTPNotFoundError(reason="Episode not found")
 
         if require_owner and episode.author_id != ctx.user.user_id:  # type: ignore[union-attr]
