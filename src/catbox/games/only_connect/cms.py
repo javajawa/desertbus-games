@@ -7,11 +7,11 @@ from __future__ import annotations as _future_annotations
 from typing import TYPE_CHECKING
 
 import asyncio
+import html
 import logging
 
 from aiohttp import web
 
-from catbox.blob import Blob
 from catbox.engine import EpisodeState, JSONDict
 from catbox.room import Endpoint, Room, Socket, command, command_no_log
 from catbox.site.state import CatBoxContext
@@ -685,7 +685,6 @@ def clue_to_element(
     clue = question.elements[idx] if question else None
     clue_text: str = clue if isinstance(clue, str) else ""
     clue_blob: dict[str, str] | None = clue if isinstance(clue, dict) else None
-    print(clue)
 
     return Element(
         "label",
@@ -693,7 +692,7 @@ def clue_to_element(
         Element(
             "input",
             id=prefix + "." + str(idx),
-            value=clue_text,
+            value=html.escape(clue_text),
             disabled=disabled,
             class_="type_text",
         ),
