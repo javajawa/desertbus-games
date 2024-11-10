@@ -45,7 +45,7 @@ def setup_page(engine: GameEngine[EpisodeVersion], episode: EpisodeVersion) -> R
                     (
                         Element(
                             "article",
-                            "⚠️ WARNING: This episode has not been approved by the moderation team!",
+                            "⚠️ WARNING: This episode has not been approved by the mod team!",
                             (
                                 Element(
                                     "div",

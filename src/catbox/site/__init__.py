@@ -61,6 +61,7 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         routes.add("/cms/create/*", CatBoxRoute(self.create_episode))
         routes.add("/edit/*", CatBoxRoute(self.edit_episode))
         routes.add("/view/*", CatBoxRoute(self.view_episode))
+        routes.add("/comment/*", CatBoxRoute(self.add_episode_comment))
         routes.add("/approve/*", CatBoxRoute(self.approve_episode))
         routes.add("/reject/*", CatBoxRoute(self.reject_episode))
         routes.add("/discard/*", CatBoxRoute(self.discard_episode))
@@ -242,6 +243,31 @@ class CatBoxApplication(Application[CatBoxState, CatBoxContext, CatBoxRoute]):
         self._app_context.add_room(room)
 
         return HTTPFound(f"/room/{room.starting_endpoint.room_code}")
+
+    async def add_episode_comment(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
+        if request.method != "POST":
+            return HTTPInternalServerError("Wrong method for /comment")
+
+        post = await request.post()
+
+        if not post or "comment" not in post:
+            return HTTPInternalServerError("No comment supplied")
+
+        user = ctx.user
+        user_name = user.user_name if user else "Anonymous"
+        data = self._get_owned_episode(ctx, request)
+
+        if not isinstance(data, tuple):
+            return data
+
+        _, episode = data
+
+        episode.author_object.send_notification(
+            f"Comment on {episode.title} v{episode.version} from {user_name}:\n\n"
+            + str(post.getone("comment")),
+        )
+
+        return HTTPFound(location=str(post.getone("return") or "/"))
 
     async def approve_episode(self, ctx: CatBoxContext, request: Request) -> ResponseProtocol:
         data = self._get_owned_episode(ctx, request, require_moderator=True)

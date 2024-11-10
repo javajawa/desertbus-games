@@ -123,7 +123,7 @@ class ThisOrThisEngine(GameEngine[ThisOrThatEpisode]):
         Playing with the audience:<br>
         - In the game manager view, there will be a room code for chat to join.<br>
         - They can either enter that at <code>db.tea-cats.co.uk</code> or
-        go direct to <code>https://db.tea-cats.co.uk/play/[room code]</code>.<br>
+        go direct to <code>https://db.tea-cats.co.uk/room/[room code]</code>.<br>
         - You can see how much of the audience has voted by their score box filling up.<br>
         - Audience score is calculated as an average of all their answers.
         </p>

@@ -61,40 +61,60 @@ class OnlyConnectViewEndpoint(Endpoint):
         return "CMS (Re)View"
 
     async def on_join(self, _: CatBoxContext, __: Request) -> ResponseProtocol:
+        episode = self.room.episode
+
         return DocResponse(
             Document(
-                f'Preview: "{self.room.episode.title}"',
+                f'Preview: "{episode.title}"',
                 Element(
                     "main",
                     Element(
                         "header",
-                        Element("h1", f'"{self.room.episode.title}"'),
+                        Element("h1", f'"{episode.title}"'),
                         class_="left-slant",
                     ),
                     Element(
                         "article",
-                        Element("div", self.room.episode.full_description, class_="usertext"),
+                        Element("div", episode.full_description, class_="usertext"),
+                        class_="panel",
+                    ),
+                    Element(
+                        "article",
+                        Element(
+                            "form",
+                            Element("p", "Leave a comment"),
+                            Element(
+                                "input",
+                                name="return",
+                                type="hidden",
+                                value=f"/room/{self.room_code}",
+                            ),
+                            Element("textarea", name="comment"),
+                            Element("input", type="submit", value="Comment", class_="button"),
+                            method="POST",
+                            action=f"/comment/{episode.engine_ident}/{episode.id}/{episode.version}",
+                        ),
                         class_="panel",
                     ),
                     section_to_element(
-                        self.room.episode.connections_round,
+                        episode.connections_round,
                         "Connections",
                         "Work out the connection",
                         "connections",
                         editable=False,
                     ),
                     section_to_element(
-                        self.room.episode.completions_round,
+                        episode.completions_round,
                         "Completions",
                         "Complete the sequence (finding the fourth element)",
                         "completions",
                         editable=False,
                     ),
-                    walls_to_element(self.room.episode.connecting_walls, editable=False),
-                    missing_vowels_to_element(self.room.episode.missing_vowels, editable=False),
+                    walls_to_element(episode.connecting_walls, editable=False),
+                    missing_vowels_to_element(episode.missing_vowels, editable=False),
                     id="main",
                 ),
-                styles=["/defs.css", "/style.css", f"/{self.room.episode.engine_ident}/edit.css"],
+                styles=["/defs.css", "/style.css", f"/{episode.engine_ident}/edit.css"],
             ),
         )
 
